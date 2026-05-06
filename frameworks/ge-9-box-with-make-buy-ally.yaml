@@ -7,28 +7,174 @@ tiers:
     type: AND-gate
     slots:
       - id: market-attractive
-        templateClaim: "The accessible market in [SCOPE] is large and growing enough to clear [THRESHOLD] within [TIMEFRAME]"
         weight: 0.25
+        claim: "Accessible market in [SCOPE] supports [THRESHOLD_LOWER] by [HORIZON] with credible path to [THRESHOLD_UPPER]"
+        falsifier: "Bottom-up share-capture analysis cannot reach [THRESHOLD_LOWER] revenue from accessible geographies within [HORIZON] under any plausible share assumption"
+        test:
+          type: threshold
+          metric: accessible_revenue
+          target: "[THRESHOLD_LOWER]"
+          horizon: "[HORIZON]"
+        modeDependence: agnostic
+        insightAtStake: "If false, no entry mode rescues the case — opportunity isn't material"
         decomposition:
-          - "TAM-SAM-SOM bridge clears threshold"
-          - "Growth trajectory is favourable"
-          - "Sub-segment mix is favourable"
+          - id: tam-sam-som
+            claim: "TAM-SAM-SOM bridge plus share-capture assumptions support [THRESHOLD_LOWER] in [SCOPE]"
+            falsifier: "At top-quartile new-entrant share, accessible revenue does not reach [THRESHOLD_LOWER]"
+            test:
+              type: threshold
+              metric: accessible_share_capture_revenue
+              target: "[THRESHOLD_LOWER]"
+              horizon: "[HORIZON]"
+            modeDependence: agnostic
+            insightAtStake: "If false, headline market size is misleading; accessible market too small"
+          - id: growth-trajectory
+            claim: "Market growth trajectory in [SCOPE] supports [THRESHOLD_UPPER] within [HORIZON]"
+            falsifier: "Compound annual growth rate across target segments is below 8% or total addressable market expansion does not reach [THRESHOLD_UPPER] by [HORIZON]"
+            test:
+              type: threshold
+              metric: market_cagr
+              target: 8%
+              horizon: "[HORIZON]"
+            modeDependence: agnostic
+            insightAtStake: "If false, revenue ramp is insufficient even with full share capture"
+          - id: sub-segment-mix
+            claim: "Intelligent vs basic segment mix in [SCOPE] favours premium pricing"
+            falsifier: "Intelligent PDU segment share is below 30% of total PDU market or average selling price premium is less than 20%"
+            test:
+              type: comparison
+              metric: intelligent_segment_share
+              target: 30%
+            modeDependence: agnostic
+            insightAtStake: "If false, margin assumptions based on intelligent segment premium are invalid"
       - id: can-win
-        templateClaim: "[COMPANY] can build a winning product in [PRODUCT]"
         weight: 0.20
+        claim: "[COMPANY] can access a competitive intelligent Rack PDU within [HORIZON] under at least one entry mode"
+        falsifier: "Price-performance parity vs [PARITY_BENCHMARKS] cannot be achieved within [HORIZON] under any entry mode"
+        test:
+          type: threshold
+          metric: months_to_parity_product
+          target: 24
+          horizon: "[HORIZON]"
+        modeDependence: agnostic
+        insightAtStake: "If false, ABB cannot compete on product capability regardless of go-to-market path"
         decomposition:
-          - "Capability gap is closeable"
-          - "Brand permission exists in target segments"
-          - "Cost position is competitive"
+          - id: capability-gap
+            claim: "Capability gap to [PARITY_BENCHMARKS] is closeable within 24 months"
+            falsifier: "Technical assessment shows >24 months required to match feature parity with [PARITY_BENCHMARKS] on remote monitoring, outlet-level control, or efficiency metrics"
+            test:
+              type: threshold
+              metric: months_to_parity_product
+              target: 24
+              horizon: "24 months"
+            modeDependence: agnostic
+            insightAtStake: "If false, build path is non-viable; buy/partner becomes mandatory"
+          - id: brand-permission
+            claim: "ABB brand has permission in electrical-room and IT-rack buyer segments"
+            falsifier: "ABB is not on approved vendor list at any of top-5 hyperscalers or top-3 colocation providers for electrical infrastructure"
+            test:
+              type: threshold
+              metric: approved_vendor_status_count
+              target: 5
+              horizon: "current"
+            modeDependence: agnostic
+            insightAtStake: "If false, IT-channel entry requires acquisition of established brand"
       - id: can-reach
-        templateClaim: "[COMPANY] can reach customers fast enough via available channels"
         weight: 0.15
+        claim: "[COMPANY] can reach IT-channel customers fast enough to capture [THRESHOLD_LOWER]"
+        falsifier: "Time to establish IT-channel relationships exceeds 18 months or channel coverage is below 60% of target accounts within [HORIZON]"
+        test:
+          type: threshold
+          metric: it_channel_coverage_pct
+          target: 60%
+          horizon: "18 months"
+        modeDependence: agnostic
+        insightAtStake: "If false, direct sales cannot achieve revenue ramp; partnership or acquisition required"
+        decomposition:
+          - id: electrical-channels-insufficient
+            claim: "Existing ABB electrical channels cannot reach IT decision-makers for rack PDU"
+            falsifier: "ABB electrical sales force has existing relationships with IT buyers at 50%+ of target accounts"
+            test:
+              type: threshold
+              metric: existing_it_relationships_pct
+              target: 50%
+              horizon: "current"
+            modeDependence: agnostic
+            insightAtStake: "If false, electrical channel can support entry; no additional go-to-market needed"
+          - id: acquisition-opens-channels
+            claim: "Acquisition or partnership secures approved vendor status at top hyperscalers and colos"
+            falsifier: "No acquisition target or partner in [SCOPE] has approved vendor status at 3+ hyperscalers"
+            test:
+              type: threshold
+              metric: approved_vendor_status_count
+              target: 3
+              horizon: "6 months post-close"
+            modeDependence: agnostic
+            insightAtStake: "If false, partnership/acquisition path does not solve channel access problem"
       - id: financials-clear
-        templateClaim: "Unit economics and investment clear [COMPANY]'s IRR hurdle"
         weight: 0.20
+        claim: "Unit economics and investment clear [COMPANY]'s IRR hurdle of [IRR_HURDLE]"
+        falsifier: "Blended margin across intelligent and basic SKUs is below 20% or payback period exceeds 3 years at target volumes"
+        test:
+          type: threshold
+          metric: blended_gross_margin
+          target: 20%
+          horizon: "steady state"
+        modeDependence: agnostic
+        insightAtStake: "If false, ROI does not justify capital allocation regardless of strategic fit"
+        decomposition:
+          - id: margins-credible
+            claim: "25-30% gross margins are achievable on intelligent PDU portfolio"
+            falsifier: "Channel margin leakage or intelligent/basic mix results in blended margin below 20%"
+            test:
+              type: threshold
+              metric: blended_gross_margin
+              target: 20%
+              horizon: "year 2"
+            modeDependence: agnostic
+            insightAtStake: "If false, pricing power assumption in intelligent segment is invalid"
+          - id: investment-vs-ramp
+            claim: "Investment required vs revenue ramp clears 15% IRR hurdle"
+            falsifier: "NPV at [IRR_HURDLE] is negative or payback period exceeds [HORIZON]"
+            test:
+              type: threshold
+              metric: npv_at_hurdle
+              target: 0
+              horizon: "[HORIZON]"
+            modeDependence: agnostic
+            insightAtStake: "If false, capital efficiency requirement not met"
       - id: tech-resilient
-        templateClaim: "The product will not be obsolete within [TIMEFRAME]"
         weight: 0.20
+        claim: "Product roadmap retains option value through next density-band migration and DC distribution scenarios"
+        falsifier: "100-200 kW density band becomes dominant within [HORIZON] and ABB cannot adapt, or DC distribution penetrates >40% of target market"
+        test:
+          type: scenario
+          metric: product_roadmap_resilience
+          target: "maintains option value across density and distribution scenarios"
+          horizon: "[HORIZON]"
+        modeDependence: agnostic
+        insightAtStake: "If false, product lifecycle too short to justify entry investment"
+        decomposition:
+          - id: density-migration
+            claim: "100-200 kW density band migration timeline is manageable with current roadmap"
+            falsifier: "100-200 kW density band exceeds 50% of target market within 24 months"
+            test:
+              type: threshold
+              metric: density_band_penetration
+              target: 50%
+              horizon: "24 months"
+            modeDependence: agnostic
+            insightAtStake: "If false, current product roadmap obsolesces within investment payback period"
+          - id: dc-distribution-unlikely
+            claim: "DC distribution disruption remains below 15% of target market through [HORIZON]"
+            falsifier: "DC distribution penetration in [SCOPE] exceeds 15% within [HORIZON]"
+            test:
+              type: scenario
+              metric: dc_distribution_penetration
+              target: 15%
+              horizon: "[HORIZON]"
+            modeDependence: agnostic
+            insightAtStake: "If false, AC-focused product portfolio loses market relevance"
   - id: tier-2
     name: Build, buy, or partner?
     type: COMPARATIVE

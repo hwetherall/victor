@@ -5,6 +5,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchRunNodes } from "@/lib/api-client";
+import { aggregateModels } from "@/lib/model-labels";
 import { ConfidenceMeter } from "./ConfidenceMeter";
 import type {
   DecisionNode,
@@ -60,9 +61,13 @@ export function KanbanBoard({ runId, onSelectHypothesis }: KanbanBoardProps) {
 
   const weakestId = decision?.content.weakestLinkNodeId ?? null;
 
+  // Distinct model pills for the decision card footer — aggregated across
+  // every node in the run (decision, hypotheses, evidence, vision-ingest).
+  const modelsUsed = aggregateModels(q.data.nodes.map((n) => n.model_used));
+
   return (
     <div className="flex flex-col gap-6">
-      {decision && <DecisionCard node={decision} />}
+      {decision && <DecisionCard node={decision} modelsUsed={modelsUsed} />}
 
       <section>
         <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-neutral-500">
@@ -107,7 +112,15 @@ export function KanbanBoard({ runId, onSelectHypothesis }: KanbanBoardProps) {
 
 // ─── Cards ───────────────────────────────────────────────────────────────────
 
-function DecisionCard({ node }: { node: DecisionNode }) {
+import type { ModelMeta } from "@/lib/model-labels";
+
+function DecisionCard({
+  node,
+  modelsUsed,
+}: {
+  node: DecisionNode;
+  modelsUsed: ModelMeta[];
+}) {
   const content = node.content;
   const passedThresholds = Object.entries(content.thresholdsMet ?? {}).filter(
     ([, v]) => v === true,
@@ -135,6 +148,27 @@ function DecisionCard({ node }: { node: DecisionNode }) {
       <div className="mt-4 max-w-md">
         <ConfidenceMeter value={node.confidence} />
       </div>
+      {modelsUsed.length > 1 && (
+        <div className="mt-5 border-t border-neutral-800/80 pt-3">
+          <span className="text-[10px] uppercase tracking-widest text-neutral-500">
+            Models contributing to this run
+          </span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {modelsUsed.map((m) => (
+              <span
+                key={`${m.label}-${m.badge ?? ""}`}
+                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${m.bgClass} ${m.textClass}`}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                <span className="uppercase tracking-wider">{m.label}</span>
+                {m.badge && (
+                  <span className="text-[10px] opacity-90">· {m.badge}</span>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

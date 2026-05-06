@@ -82,6 +82,8 @@ export async function decide(
     hypotheses: hypotheses.map((h) => ({
       label: h.label,
       claim: (h.content as HypothesisContent).claim,
+      falsifier: (h.content as HypothesisContent).falsifier,
+      insightAtStake: (h.content as HypothesisContent).insightAtStake,
       confidence: typeof h.confidence === "number" ? h.confidence : 0.5,
       weight: typeof h.weight === "number" ? h.weight : 0,
     })),
@@ -120,6 +122,8 @@ interface OpusInput {
   hypotheses: {
     label: string;
     claim: string;
+    falsifier: string;
+    insightAtStake: string;
     confidence: number;
     weight: number;
   }[];
@@ -134,7 +138,12 @@ async function callOpus(
   const hypBlock = input.hypotheses
     .map(
       (h) =>
-        `- ${h.label} — confidence ${h.confidence.toFixed(2)}, weight ${h.weight.toFixed(2)}\n  claim: ${h.claim}`,
+        [
+          `- ${h.label} — confidence ${h.confidence.toFixed(2)}, weight ${h.weight.toFixed(2)}`,
+          `  claim: ${h.claim}`,
+          `  falsifier: ${h.falsifier}`,
+          `  insight at stake: ${h.insightAtStake}`,
+        ].join("\n"),
     )
     .join("\n");
 
@@ -154,6 +163,10 @@ async function callOpus(
         "case-style strategic decision. You have a rolled-up confidence score,",
         "five Tier 1 hypotheses with individual confidences, optionally a Tier 2",
         "build/buy/partner result, and a weakest-link callout.",
+        "Each hypothesis also includes the falsifier that would disprove it and",
+        "the insight at stake if it is true or false. Use those fields to make",
+        "the recommendation sharper and to avoid overclaiming where a falsifier",
+        "has not been addressed.",
         "",
         "Return JSON with shape:",
         "{",

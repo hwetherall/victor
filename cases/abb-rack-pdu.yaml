@@ -5,10 +5,13 @@ frameworkId: ge-9-box-with-make-buy-ally
 
 substitutions:
   COMPANY: ABB
-  PRODUCT: rack PDU (with emphasis on intelligent/managed segment)
+  PRODUCT: rack PDU (intelligent/managed segment)
   SCOPE: global data center market, accessible geographies excluding restricted markets
-  THRESHOLD: $100M/year revenue
-  TIMEFRAME: 3 years
+  THRESHOLD_LOWER: $50M annual revenue
+  THRESHOLD_UPPER: $100M annual revenue
+  HORIZON: 3 years
+  PARITY_BENCHMARKS: Vertiv, Schneider Electric, Eaton
+  IRR_HURDLE: 15%
 
 weights:
   marketSize: 0.25

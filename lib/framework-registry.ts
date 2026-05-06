@@ -1,14 +1,35 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { load as parseYaml } from "js-yaml";
+import type { HypothesisTestType, ModeDependence } from "./schema";
 
 // ─── Framework YAML shape (mirrors frameworks/*.yaml, SPEC §7.1) ─────────────
 
+export interface FrameworkSlotTest {
+  type: HypothesisTestType;
+  metric: string;
+  target: string | number;
+  horizon?: string;
+}
+
+export interface FrameworkSubSlot {
+  id: string;
+  claim: string;
+  falsifier: string;
+  test: FrameworkSlotTest;
+  modeDependence: ModeDependence;
+  insightAtStake: string;
+}
+
 export interface FrameworkSlot {
   id: string;
-  templateClaim: string;
   weight: number;
-  decomposition?: string[];
+  claim: string;
+  falsifier: string;
+  test: FrameworkSlotTest;
+  modeDependence: ModeDependence;
+  insightAtStake: string;
+  decomposition?: FrameworkSubSlot[];
 }
 
 export interface FrameworkTier1 {
@@ -101,4 +122,33 @@ export function applySubstitutions(
   return template.replace(/\[([A-Z_]+)\]/g, (match, key: string) => {
     return subs[key] ?? match;
   });
+}
+
+/**
+ * Deeply applies substitutions to all string fields in an object.
+ * Handles nested objects and arrays.
+ */
+export function applySubstitutionsDeep<T>(
+  obj: T,
+  subs: Record<string, string>,
+): T {
+  if (typeof obj !== "object" || obj === null) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => applySubstitutionsDeep(item, subs)) as unknown as T;
+  }
+
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === "string") {
+      result[key] = applySubstitutions(value, subs);
+    } else if (typeof value === "object" && value !== null) {
+      result[key] = applySubstitutionsDeep(value, subs);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result as T;
 }

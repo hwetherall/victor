@@ -26,7 +26,9 @@ export type AgentRole =
   | "evidence-doc"
   | "evaluator"
   | "tier2"
-  | "decision";
+  | "decision"
+  | "vision"
+  | "contrarian";
 
 export const MODEL_MAP: Record<AgentRole, LLMModel> = {
   "evidence-web": MODELS.mistralLarge,
@@ -34,6 +36,11 @@ export const MODEL_MAP: Record<AgentRole, LLMModel> = {
   evaluator: MODELS.sonnet,
   tier2: MODELS.sonnet,
   decision: MODELS.opus,
+  // Sonnet 4.6 has the most reliable PDF understanding via OpenRouter.
+  vision: MODELS.sonnet,
+  // Contrarian uses Sonnet but is labelled distinctly via model_used so the
+  // UI can render a red-team badge separate from regular evaluator outputs.
+  contrarian: MODELS.sonnet,
 };
 
 // ─── Client ──────────────────────────────────────────────────────────────────
@@ -128,4 +135,70 @@ export function stripJsonFences(s: string): string {
   const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
   if (fenced) return fenced[1].trim();
   return trimmed;
+}
+
+// ─── Multimodal (PDF + image input) ──────────────────────────────────────────
+// OpenRouter accepts PDF and image content blocks directly in the user message.
+// The OpenAI SDK's strict types don't include the `file` block, so we cast to
+// `any` at the call boundary. The request body is JSON-serialised as-is.
+
+export type ContentBlock =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } }
+  | { type: "file"; file: { filename: string; file_data: string } };
+
+export interface MultimodalMessage {
+  role: "system" | "user" | "assistant";
+  content: string | ContentBlock[];
+}
+
+export async function completeMultimodal(
+  role: AgentRole,
+  messages: MultimodalMessage[],
+  options: CompletionOptions = {},
+): Promise<string> {
+  const model = MODEL_MAP[role];
+  const body = {
+    model,
+    messages,
+    temperature: options.temperature ?? 0.2,
+    max_tokens: options.maxTokens,
+    stream: false as const,
+    ...(options.jsonMode ? { response_format: { type: "json_object" } } : {}),
+  };
+  // The OpenAI SDK's strict types reject `type: "file"` content blocks, but
+  // OpenRouter accepts and forwards them. Cast at the call boundary.
+  const response = (await getClient().chat.completions.create(
+    body as unknown as Parameters<
+      ReturnType<typeof getClient>["chat"]["completions"]["create"]
+    >[0],
+  )) as OpenAI.Chat.ChatCompletion;
+
+  const text = response.choices[0]?.message?.content;
+  if (!text) {
+    throw new Error(
+      `LLM returned empty response (model=${model}, finish_reason=${response.choices[0]?.finish_reason})`,
+    );
+  }
+  return typeof text === "string" ? text : JSON.stringify(text);
+}
+
+export async function completeMultimodalJson<T = unknown>(
+  role: AgentRole,
+  messages: MultimodalMessage[],
+  options: CompletionOptions = {},
+): Promise<T> {
+  const raw = await completeMultimodal(role, messages, {
+    ...options,
+    jsonMode: true,
+  });
+  const stripped = stripJsonFences(raw);
+  try {
+    return JSON.parse(stripped) as T;
+  } catch (e) {
+    throw new Error(
+      `completeMultimodalJson(${role}): JSON.parse failed (${e instanceof Error ? e.message : e})\n` +
+        `raw response:\n${raw}`,
+    );
+  }
 }

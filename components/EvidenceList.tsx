@@ -12,6 +12,7 @@ import type {
   HypothesisContent,
   Source,
 } from "@/lib/schema";
+import { modelMeta } from "@/lib/model-labels";
 import { ConfidenceMeter } from "./ConfidenceMeter";
 
 interface EvidenceListProps {
@@ -96,13 +97,11 @@ export function EvidenceList({
                   className="flex w-full flex-col gap-2 rounded-lg border border-neutral-800 bg-neutral-950 p-4 text-left transition-colors hover:border-neutral-600"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <SupportsBadge supports={c.supports} />
                       <StrengthBadge strength={c.strength} />
                       {item.node.model_used && (
-                        <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-neutral-500">
-                          {modelTag(item.node.model_used)}
-                        </span>
+                        <ModelBadge modelUsed={item.node.model_used} />
                       )}
                     </div>
                     <span className="truncate text-[11px] text-neutral-500">
@@ -176,12 +175,19 @@ function sourceLabelFor(source: Source | null): string {
   return source.title ?? source.type;
 }
 
-function modelTag(model: string): string {
-  const m = model.toLowerCase();
-  if (m.includes("opus")) return "opus";
-  if (m.includes("sonnet")) return "sonnet";
-  if (m.includes("mistral")) return "mistral";
-  if (m.includes("gemini")) return "gemini";
-  if (m.includes("gpt")) return "gpt";
-  return model.slice(0, 8);
+function ModelBadge({ modelUsed }: { modelUsed: string }) {
+  const meta = modelMeta(modelUsed);
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs uppercase tracking-wider ${meta.bgClass} ${meta.textClass}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {meta.label}
+      {meta.badge && (
+        <span className="ml-0.5 text-[10px] font-medium normal-case opacity-90">
+          · {meta.badge}
+        </span>
+      )}
+    </span>
+  );
 }

@@ -2,74 +2,9 @@
 // Produces the SPEC §8 tree: 1 decision + 5 hypothesis + 11 sub-hypothesis = 17 nodes.
 // Sub-hypothesis labels are verbatim from SPEC §8.
 
-import { applySubstitutions } from "@/lib/framework-registry";
 import { insforge } from "@/lib/db";
-import type {
-  HypothesisContent,
-  DecisionContent,
-  TreeNode,
-} from "@/lib/schema";
+import type { DecisionContent, HypothesisContent, TreeNode } from "@/lib/schema";
 import type { FrameworkBinding } from "./framework-binder";
-
-interface SpecHypothesis {
-  /** Stable id used to look up the slot in the framework binding. */
-  slotId: string;
-  /** Short label shown in the UI (SPEC §8 verbatim). */
-  label: string;
-  /** Case-level weight key — overrides the framework slot weight when present. */
-  caseWeightKey: string;
-  subs: { label: string }[];
-}
-
-// SPEC §8 verbatim. Slot ids match frameworks/ge-9-box-make-buy-ally.yaml.
-const ABB_HYPOTHESES: SpecHypothesis[] = [
-  {
-    slotId: "market-attractive",
-    label: "Accessible market clears $100M/3yr threshold",
-    caseWeightKey: "marketSize",
-    subs: [
-      { label: "TAM-SAM-SOM bridge supports $100M" },
-      { label: "Growth trajectory is favourable" },
-      { label: "Intelligent vs basic mix favours ABB entry" },
-    ],
-  },
-  {
-    slotId: "can-win",
-    label: "ABB can build a winning product",
-    caseWeightKey: "strategicFit",
-    subs: [
-      { label: "Intelligent PDU capability gap is closeable" },
-      { label: "Brand has permission in target segments" },
-    ],
-  },
-  {
-    slotId: "can-reach",
-    label: "ABB can reach IT-channel customers fast enough",
-    caseWeightKey: "timeToMarket",
-    subs: [
-      { label: "Existing electrical channels are insufficient" },
-      { label: "Acquisition or partnership opens IT channels" },
-    ],
-  },
-  {
-    slotId: "financials-clear",
-    label: "Unit economics clear ABB's IRR hurdle",
-    caseWeightKey: "roi",
-    subs: [
-      { label: "Achievable margins (25–30% claim) are credible" },
-      { label: "Investment vs revenue ramp clears hurdle" },
-    ],
-  },
-  {
-    slotId: "tech-resilient",
-    label: "Product will not be obsolete within 3 years",
-    caseWeightKey: "techResilience",
-    subs: [
-      { label: "25kW+ migration timeline is manageable" },
-      { label: "DC distribution disruption is unlikely in window" },
-    ],
-  },
-];
 
 const DECISION_LABEL = "Should ABB pursue rack PDU? If yes, how?";
 
@@ -79,6 +14,28 @@ const EMPTY_DECISION_CONTENT: DecisionContent = {
   weakestLinkNodeId: "",
   thresholdsMet: {},
 };
+
+/**
+ * Build a HypothesisContent from a bound slot, selecting only the fields
+ * that belong in tree_nodes.content.
+ */
+function slotToHypothesisContent(slot: {
+  claim: string;
+  falsifier: string;
+  test: HypothesisContent["test"];
+  modeDependence: HypothesisContent["modeDependence"];
+  insightAtStake: string;
+  id: string;
+}): HypothesisContent {
+  return {
+    claim: slot.claim,
+    falsifier: slot.falsifier,
+    test: slot.test,
+    modeDependence: slot.modeDependence,
+    insightAtStake: slot.insightAtStake,
+    templateId: slot.id,
+  };
+}
 
 export async function buildTree(
   dbCaseId: string,
@@ -97,44 +54,32 @@ export async function buildTree(
 
   // 2. Insert 5 hypotheses under decision.
   const hypothesisRows: TreeNode[] = [];
-  for (const h of ABB_HYPOTHESES) {
-    const slot = binding.slots.find((s) => s.id === h.slotId);
-    if (!slot) {
-      throw new Error(
-        `Framework binding missing slot "${h.slotId}" — check frameworks/${binding.frameworkId}.yaml`,
-      );
-    }
-    const claim = applySubstitutions(slot.claim, {});
-    const weight = caseWeights[h.caseWeightKey] ?? slot.weight;
+  for (const slot of binding.slots) {
+    const weight = caseWeights[slot.id] ?? slot.weight;
 
     const hypRow = await insertNode({
       case_id: dbCaseId,
       parent_id: decisionRow.id,
       type: "hypothesis",
-      label: h.label,
-      content: {
-        claim,
-        templateId: slot.id,
-      } satisfies HypothesisContent,
+      label: slot.claim.substring(0, 60) + (slot.claim.length > 60 ? "..." : ""),
+      content: slotToHypothesisContent(slot),
       weight,
     });
     hypothesisRows.push(hypRow);
   }
 
-  // 3. Insert 11 sub-hypotheses under their parent hypotheses.
+  // 3. Insert sub-hypotheses under their parent hypotheses.
   const subRows: TreeNode[] = [];
-  for (let i = 0; i < ABB_HYPOTHESES.length; i++) {
+  for (let i = 0; i < binding.slots.length; i++) {
     const parent = hypothesisRows[i];
-    const h = ABB_HYPOTHESES[i];
-    for (const sub of h.subs) {
+    const slot = binding.slots[i];
+    for (const sub of slot.decomposition) {
       const subRow = await insertNode({
         case_id: dbCaseId,
         parent_id: parent.id,
         type: "sub_hypothesis",
-        label: sub.label,
-        content: {
-          claim: sub.label,
-        } satisfies HypothesisContent,
+        label: sub.claim.substring(0, 60) + (sub.claim.length > 60 ? "..." : ""),
+        content: slotToHypothesisContent(sub),
         weight: null,
       });
       subRows.push(subRow);

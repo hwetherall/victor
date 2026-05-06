@@ -3,16 +3,19 @@
 // runs insert/update) and every LLM agent (evaluator × 11, optionally Tier 2,
 // decision). Cost ~$0.08, time 1-2 min.
 //
-// Run: npx tsx scripts/smoke-pipeline.ts
+// Run: npx tsx --conditions=import scripts/smoke-pipeline.ts
 
 import { config as loadEnv } from "dotenv";
 loadEnv({ path: ".env.local" });
 
-import { runCase } from "../agents/orchestrator";
-import { insforge } from "../lib/db";
 import type { TreeNode } from "../lib/schema";
 
 async function main() {
+  const [{ runCase }, { insforge }] = await Promise.all([
+    import("../agents/orchestrator"),
+    import("../lib/db"),
+  ]);
+
   console.log("─── Pipeline smoke: abb-rack-pdu ───");
   const t0 = Date.now();
 

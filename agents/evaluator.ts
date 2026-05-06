@@ -46,8 +46,8 @@ export async function evaluateHypothesis(
   const evidenceChildren = (childRows as TreeNode[] | null) ?? [];
   const evidence = evidenceChildren.filter((n) => n.type === "evidence");
 
-  const claim = (hypothesis.content as HypothesisContent).claim;
-  const result = await callSonnet(claim, evidence);
+  const hypothesisContent = hypothesis.content as HypothesisContent;
+  const result = await callSonnet(hypothesisContent, evidence);
 
   // Persist on the hypothesis node.
   const updatedContent: HypothesisContent = {
@@ -69,7 +69,7 @@ export async function evaluateHypothesis(
 }
 
 async function callSonnet(
-  claim: string,
+  hypothesis: HypothesisContent,
   evidence: TreeNode[],
 ): Promise<EvaluationResult> {
   const evidenceList = evidence
@@ -84,9 +84,15 @@ async function callSonnet(
       role: "system",
       content: [
         "You are a strategic-analysis evaluator. You are given a single",
-        "hypothesis claim and a list of evidence findings. Each finding is",
-        "tagged with whether it supports/contradicts/is mixed on the claim,",
+        "hypothesis claim, its explicit falsifier, its decision test, and a",
+        "list of evidence findings. Each finding is tagged with whether it",
+        "supports/contradicts/is mixed on the claim,",
         "and whether the evidence is weak/moderate/strong.",
+        "",
+        "Evaluate confidence against the stated test, not just the wording of",
+        "the claim. Treat evidence that satisfies the falsifier as strong",
+        "contradicting evidence, and explain any gap between the test and the",
+        "available findings.",
         "",
         "Return JSON with shape:",
         "{",
@@ -103,7 +109,11 @@ async function callSonnet(
     {
       role: "user",
       content: [
-        `Hypothesis claim:\n${claim}`,
+        `Hypothesis claim:\n${hypothesis.claim}`,
+        "",
+        `Falsifier:\n${hypothesis.falsifier}`,
+        "",
+        `Test:\n${formatTest(hypothesis.test)}`,
         "",
         evidenceList.length > 0
           ? `Evidence (${evidence.length} items):\n${evidenceList}`
@@ -128,4 +138,9 @@ async function callSonnet(
 function clamp(n: number, lo: number, hi: number): number {
   if (typeof n !== "number" || Number.isNaN(n)) return 0.5;
   return Math.max(lo, Math.min(hi, n));
+}
+
+function formatTest(test: HypothesisContent["test"]): string {
+  const horizon = test.horizon ? ` over ${test.horizon}` : "";
+  return `${test.type} test on ${test.metric}: target ${String(test.target)}${horizon}`;
 }

@@ -1,19 +1,35 @@
 // SPEC §6.2 — v1 stub. Loads the configured framework and applies case
-// substitutions to each slot's templateClaim. Real framework selection is
+// substitutions to each slot's structured content. Real framework selection is
 // deferred to v2 (SPEC §13).
 
 import {
-  applySubstitutions,
+  applySubstitutionsDeep,
   loadCase,
   loadFramework,
   type Framework,
+  type FrameworkSlot,
+  type FrameworkSubSlot,
 } from "@/lib/framework-registry";
+import type { HypothesisContent } from "@/lib/schema";
 
 export interface BoundSlot {
   id: string;
   claim: string;
+  falsifier: string;
+  test: HypothesisContent["test"];
+  modeDependence: HypothesisContent["modeDependence"];
+  insightAtStake: string;
   weight: number;
-  decomposition: string[];
+  decomposition: BoundSubSlot[];
+}
+
+export interface BoundSubSlot {
+  id: string;
+  claim: string;
+  falsifier: string;
+  test: HypothesisContent["test"];
+  modeDependence: HypothesisContent["modeDependence"];
+  insightAtStake: string;
 }
 
 export interface FrameworkBinding {
@@ -24,17 +40,44 @@ export interface FrameworkBinding {
   slots: BoundSlot[];
 }
 
+/**
+ * Convert a framework slot to a bound slot with substitutions applied.
+ */
+function bindSlot(
+  slot: FrameworkSlot,
+  subs: Record<string, string>,
+): BoundSlot {
+  const applied = applySubstitutionsDeep<FrameworkSlot>(slot, subs);
+  return {
+    id: applied.id,
+    claim: applied.claim,
+    falsifier: applied.falsifier,
+    test: applied.test,
+    modeDependence: applied.modeDependence,
+    insightAtStake: applied.insightAtStake,
+    weight: applied.weight,
+    decomposition: (applied.decomposition ?? []).map((sub) => {
+      const appliedSub = applySubstitutionsDeep<FrameworkSubSlot>(sub, subs);
+      return {
+        id: appliedSub.id,
+        claim: appliedSub.claim,
+        falsifier: appliedSub.falsifier,
+        test: appliedSub.test,
+        modeDependence: appliedSub.modeDependence,
+        insightAtStake: appliedSub.insightAtStake,
+      };
+    }),
+  };
+}
+
 export async function bindFramework(caseId: string): Promise<FrameworkBinding> {
   const config = loadCase(caseId);
   const framework = loadFramework(config.frameworkId);
 
   const tier1 = framework.tiers[0];
-  const slots: BoundSlot[] = tier1.slots.map((slot) => ({
-    id: slot.id,
-    claim: applySubstitutions(slot.templateClaim, config.substitutions),
-    weight: slot.weight,
-    decomposition: slot.decomposition ?? [],
-  }));
+  const slots: BoundSlot[] = tier1.slots.map((slot) =>
+    bindSlot(slot, config.substitutions),
+  );
 
   const weightSum = slots.reduce((acc, s) => acc + s.weight, 0);
   if (Math.abs(weightSum - 1) > 0.001) {

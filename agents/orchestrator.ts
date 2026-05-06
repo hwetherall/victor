@@ -14,6 +14,7 @@ import { rollupConfidence } from "./rollup";
 import { decide } from "./decision";
 import { gatherWebEvidence, type CaseContext } from "./evidence/web-search";
 import { gatherDocEvidence } from "./evidence/doc-retrieval";
+import { runContrarianPass } from "./contrarian";
 
 export interface RunResult {
   runId: string;
@@ -116,6 +117,20 @@ async function executeRun(
 
     // Stage 7: persist hypothesis-level confidences.
     await persistHypothesisRollup(rollup.tree);
+
+    // Stage 7.5: contrarian / red-team pass on top-2 hypotheses. Adds
+    // `supports='against'` evidence rows. Failures are isolated — they must
+    // never block the run.
+    try {
+      await runContrarianPass(
+        dbCaseId,
+        rollup.tree.filter((n) => n.type === "hypothesis"),
+      );
+    } catch (e) {
+      console.warn(
+        `contrarian pass failed (continuing): ${e instanceof Error ? e.message : e}`,
+      );
+    }
 
     // Stage 8: decision agent (Opus). Conditionally invokes Tier 2 inside.
     await decide(dbCaseId, caseConfigId, {

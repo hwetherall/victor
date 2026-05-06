@@ -37,8 +37,23 @@ export interface DecisionContent {
   thresholdsMet: Record<string, boolean>;
 }
 
+export type HypothesisTestType = 'threshold' | 'comparison' | 'scenario' | 'binary';
+
+export interface HypothesisTest {
+  type: HypothesisTestType;
+  metric: string;
+  target: string | number;
+  horizon?: string;
+}
+
+export type ModeDependence = 'agnostic' | 'requires_mode';
+
 export interface HypothesisContent {
   claim: string;
+  falsifier: string;
+  test: HypothesisTest;
+  modeDependence: ModeDependence;
+  insightAtStake: string;
   templateId?: string;
   rationale?: string;
 }
