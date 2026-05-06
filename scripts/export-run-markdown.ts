@@ -213,13 +213,43 @@ function renderReport(input: {
     const content = decision.content as DecisionContent;
     lines.push(`**Decision:** ${content.finalDecision}`);
     lines.push(`**Confidence:** ${formatConfidence(decision.confidence)}`);
-    lines.push(`**Weakest link:** \`${content.weakestLinkNodeId}\``);
+    const weakestLabel =
+      content.weakestLinkLabel ??
+      input.nodes.find((n) => n.id === content.weakestLinkNodeId)?.label ??
+      content.weakestLinkNodeId;
+    lines.push(`**Weakest link:** ${weakestLabel}`);
     lines.push("");
     lines.push(content.reasoning || "_No reasoning captured._");
     lines.push("");
+    const gapGroups = aggregateGapsForExport(input.nodes, hypotheses);
+    if (gapGroups.length > 0) {
+      lines.push("**Diligence gaps to close:**");
+      for (const group of gapGroups) {
+        lines.push(`- _${group.parentLabel}_`);
+        for (const action of group.actions) {
+          lines.push(`  - ${action}`);
+        }
+      }
+      lines.push("");
+    }
+
     lines.push("**Thresholds:**");
-    for (const [key, value] of Object.entries(content.thresholdsMet)) {
-      lines.push(`- ${key}: ${value ? "met" : "not met"}`);
+    if (content.thresholds && Object.keys(content.thresholds).length > 0) {
+      const labelById = new Map(input.nodes.map((n) => [n.id, n.label]));
+      for (const [key, record] of Object.entries(content.thresholds)) {
+        const observed = formatThresholdObserved(record);
+        const sources = record.sourceLeafIds
+          .map((id) => labelById.get(id) ?? id)
+          .join(", ");
+        const sourceSuffix = sources ? ` (see ${sources})` : "";
+        lines.push(
+          `- ${key}: target ${record.target} / observed ${observed}${sourceSuffix}`,
+        );
+      }
+    } else {
+      for (const [key, value] of Object.entries(content.thresholdsMet)) {
+        lines.push(`- ${key}: ${value ? "met" : "not met"}`);
+      }
     }
   } else {
     lines.push("_No decision node found._");
@@ -288,9 +318,18 @@ function renderEvidence(
 ) {
   if (node.type !== "evidence") return;
   const content = node.content as EvidenceContent;
+  const strengthLabel =
+    content.rawStrength && content.rawStrength !== content.strength
+      ? `${content.strength} (was ${content.rawStrength} pre-stake)`
+      : content.strength;
+  const stakeLabel =
+    content.sourceStake && content.sourceStake !== "third-party"
+      ? `source: ${content.sourceStake}`
+      : undefined;
   const badges = [
     content.supports,
-    content.strength,
+    strengthLabel,
+    stakeLabel,
     node.model_used ? `model: ${node.model_used}` : undefined,
   ].filter(Boolean);
 
@@ -317,6 +356,47 @@ function groupChildren(nodes: TreeNode[]): Map<string, TreeNode[]> {
     out.set(node.parent_id, children);
   }
   return out;
+}
+
+function aggregateGapsForExport(
+  nodes: TreeNode[],
+  hypotheses: TreeNode[],
+): { parentLabel: string; actions: string[] }[] {
+  const childrenByParent = groupChildren(nodes);
+  const groups: { parentLabel: string; actions: string[] }[] = [];
+  for (const parent of hypotheses) {
+    const subs = (childrenByParent.get(parent.id) ?? []).filter(
+      (n) => n.type === "sub_hypothesis",
+    );
+    const actions: string[] = [];
+    for (const sub of subs) {
+      const action = (sub.content as HypothesisContent).gapClosingAction;
+      if (action && !actions.includes(action)) actions.push(action);
+    }
+    if (actions.length > 0) {
+      groups.push({ parentLabel: parent.label, actions });
+    }
+  }
+  return groups;
+}
+
+function formatThresholdObserved(record: {
+  observed: number | string | null;
+  status: "met" | "not-met" | "not-directly-tested" | "partially-tested";
+}): string {
+  if (record.observed !== null && record.observed !== undefined) {
+    return `${record.observed} (${record.status})`;
+  }
+  switch (record.status) {
+    case "not-directly-tested":
+      return "not directly tested";
+    case "partially-tested":
+      return "partially tested";
+    case "met":
+      return "met";
+    case "not-met":
+      return "not met";
+  }
 }
 
 function formatTest(test: HypothesisContent["test"]): string {

@@ -8,7 +8,10 @@ import { completeJson, type Message } from "@/lib/llm-client";
 import { loadCase } from "@/lib/framework-registry";
 import type {
   DecisionContent,
+  EvidenceContent,
+  FinalDecisionState,
   HypothesisContent,
+  ThresholdRecord,
   TreeNode,
 } from "@/lib/schema";
 import {
@@ -65,16 +68,28 @@ export async function decide(
     );
   }
 
-  // Compute thresholdsMet deterministically from caseConfig.thresholds.
-  // For v1 we cannot evaluate every threshold against real data — we mark
-  // them based on hypothesis evidence alignment. This is a placeholder that
-  // Opus can refine in its rationale.
+  // Per-threshold records (improve.md §10). v1 falsely showed every threshold
+  // as "met"; v3 says "not directly tested" unless a leaf produced a numeric
+  // observation that clears the target. Numeric extraction from evidence is
+  // not implemented yet (v3.5 work), so every threshold currently surfaces as
+  // not-directly-tested with the candidate source leaves named.
+  const subHypotheses = nodes.filter((n) => n.type === "sub_hypothesis");
+  const thresholds = buildThresholdRecords(
+    caseConfig.thresholds,
+    subHypotheses as Extract<TreeNode, { type: "sub_hypothesis" }>[],
+  );
+
+  // thresholdsMet retained for pre-v3 read paths until they migrate.
   const thresholdsMet: Record<string, boolean> = {};
-  for (const key of Object.keys(caseConfig.thresholds)) {
-    thresholdsMet[key] = opts.rolledConfidence > 0.5;
+  for (const [key, record] of Object.entries(thresholds)) {
+    thresholdsMet[key] = record.status === "met";
   }
 
-  // Ask Opus to write the human-facing decision text.
+  const weakestLinkLabel =
+    hypotheses.find((h) => h.id === opts.weakestLinkNodeId)?.label ??
+    "(unknown)";
+
+  // Ask Opus to write the human-facing decision text + state.
   const finalDecisionText = await callOpus({
     caseTitle: caseConfig.title,
     caseQuestion: caseConfig.question,
@@ -87,17 +102,29 @@ export async function decide(
       confidence: typeof h.confidence === "number" ? h.confidence : 0.5,
       weight: typeof h.weight === "number" ? h.weight : 0,
     })),
-    weakestLinkLabel:
-      hypotheses.find((h) => h.id === opts.weakestLinkNodeId)?.label ??
-      "(unknown)",
+    weakestLinkLabel,
     tier2,
     thresholdsMet,
   });
 
+  // Deterministic post-check (improve.md §7): if Opus picked `do-not-pursue`
+  // but no leaf has substantial contradicting evidence, force the state to
+  // `insufficient-evidence`. This guards against the v1 failure where every
+  // low-confidence leaf was framed as a hard "no" when it was really "we
+  // don't know yet".
+  const finalDecisionState = applyStatePostCheck(
+    finalDecisionText.state,
+    opts.rolledConfidence,
+    nodes,
+  );
+
   const content: DecisionContent = {
     finalDecision: finalDecisionText.headline,
+    finalDecisionState,
     reasoning: finalDecisionText.reasoning,
     weakestLinkNodeId: opts.weakestLinkNodeId,
+    weakestLinkLabel,
+    thresholds,
     thresholdsMet,
   };
 
@@ -113,6 +140,112 @@ export async function decide(
   if (updErr) throw new Error(`decision update: ${updErr.message}`);
 
   return content;
+}
+
+// "Substantial contradicting evidence" at a leaf means at least one
+// against-strong item, OR two against items at moderate-or-better strength.
+// (improve.md §7 doesn't fix the bar — this is the v3 baseline.)
+function leafHasSubstantialContradicting(
+  leaf: Extract<TreeNode, { type: "sub_hypothesis" }>,
+  evidenceByParent: Map<string, TreeNode[]>,
+): boolean {
+  const ev = (evidenceByParent.get(leaf.id) ?? []).filter(
+    (n) => n.type === "evidence",
+  );
+  let strongAgainst = 0;
+  let moderateOrBetterAgainst = 0;
+  for (const e of ev) {
+    const c = e.content as EvidenceContent;
+    if (c.supports !== "against") continue;
+    if (c.strength === "strong") strongAgainst++;
+    if (c.strength === "moderate" || c.strength === "strong") {
+      moderateOrBetterAgainst++;
+    }
+  }
+  return strongAgainst >= 1 || moderateOrBetterAgainst >= 2;
+}
+
+const STATE_GATING_THRESHOLD = 0.6;
+const LOW_CONFIDENCE_LEAF_BAR = 0.5;
+
+function applyStatePostCheck(
+  proposed: FinalDecisionState,
+  rolledConfidence: number,
+  nodes: TreeNode[],
+): FinalDecisionState {
+  // Above the gating threshold the only valid state is `pursue`. Below it,
+  // `pursue` is impossible — fall through to the contradicting-vs-absent
+  // disambiguation below.
+  if (rolledConfidence >= STATE_GATING_THRESHOLD) return "pursue";
+  if (proposed === "pursue") return "insufficient-evidence";
+
+  // For below-threshold states, decide between do-not-pursue (test answered
+  // "no") and insufficient-evidence (test not answered) based on whether the
+  // low-confidence leaves carry substantial contradicting evidence.
+  const evidenceByParent = new Map<string, TreeNode[]>();
+  for (const n of nodes) {
+    if (n.type !== "evidence" || !n.parent_id) continue;
+    const arr = evidenceByParent.get(n.parent_id) ?? [];
+    arr.push(n);
+    evidenceByParent.set(n.parent_id, arr);
+  }
+
+  const lowConfLeaves = nodes.filter(
+    (n): n is Extract<TreeNode, { type: "sub_hypothesis" }> =>
+      n.type === "sub_hypothesis" &&
+      typeof n.confidence === "number" &&
+      n.confidence < LOW_CONFIDENCE_LEAF_BAR,
+  );
+  const contradicted = lowConfLeaves.filter((leaf) =>
+    leafHasSubstantialContradicting(leaf, evidenceByParent),
+  );
+
+  // do-not-pursue requires a majority of low-confidence leaves to be
+  // contradicted; otherwise force insufficient-evidence.
+  const majorityContradicted =
+    lowConfLeaves.length > 0 &&
+    contradicted.length * 2 > lowConfLeaves.length;
+
+  if (proposed === "do-not-pursue" && !majorityContradicted) {
+    return "insufficient-evidence";
+  }
+  return proposed;
+}
+
+// Map case-yaml threshold keys to the framework template ids of the leaves
+// that test them. Hard-coded for `ge-9-box-with-make-buy-ally` while there is
+// only one framework; lift to framework yaml when a second one ships.
+const THRESHOLD_LEAF_TEMPLATES: Record<string, string[]> = {
+  minRevenue: ["tam-sam-som", "growth-trajectory"],
+  timeYears: [],
+  irrHurdle: ["investment-vs-ramp"],
+  internalDevMaxYears: ["capability-gap"],
+};
+
+function buildThresholdRecords(
+  caseThresholds: Record<string, number | string>,
+  subHypotheses: Extract<TreeNode, { type: "sub_hypothesis" }>[],
+): Record<string, ThresholdRecord> {
+  const leafByTemplateId = new Map<string, string>();
+  for (const sub of subHypotheses) {
+    const templateId = (sub.content as HypothesisContent).templateId;
+    if (templateId) leafByTemplateId.set(templateId, sub.id);
+  }
+
+  const out: Record<string, ThresholdRecord> = {};
+  for (const [key, target] of Object.entries(caseThresholds)) {
+    const templateIds = THRESHOLD_LEAF_TEMPLATES[key] ?? [];
+    const sourceLeafIds = templateIds
+      .map((tid) => leafByTemplateId.get(tid))
+      .filter((id): id is string => Boolean(id));
+    out[key] = {
+      target,
+      observed: null,
+      status: "not-directly-tested",
+      sourceLeafIds,
+    };
+  }
+  return out;
 }
 
 interface OpusInput {
@@ -134,7 +267,11 @@ interface OpusInput {
 
 async function callOpus(
   input: OpusInput,
-): Promise<{ headline: string; reasoning: string }> {
+): Promise<{
+  headline: string;
+  reasoning: string;
+  state: FinalDecisionState;
+}> {
   const hypBlock = input.hypotheses
     .map(
       (h) =>
@@ -168,16 +305,29 @@ async function callOpus(
         "the recommendation sharper and to avoid overclaiming where a falsifier",
         "has not been addressed.",
         "",
+        "There are exactly THREE possible decision states. Be opinionated;",
+        "never hedge with phrases like 'pursue with conditions' — that state",
+        "does not exist.",
+        "",
+        "  - 'pursue' — rolled confidence ≥ 0.6 and Tier 2 ran. Headline names",
+        "    the recommended mode (build / acquire / partner).",
+        "  - 'do-not-pursue' — rolled confidence < 0.6 AND most low-confidence",
+        "    leaves carry strong contradicting evidence (the test was answered",
+        "    and the answer was 'no'). Headline: 'Do not pursue <product>'.",
+        "  - 'insufficient-evidence' — rolled confidence < 0.6 AND the low-",
+        "    confidence leaves are low because evidence is missing, not",
+        "    because findings contradict the claim. Headline: 'Below",
+        "    confidence threshold — close diligence gaps before deciding'.",
+        "",
         "Return JSON with shape:",
         "{",
-        '  "headline":  "<≤15 words, e.g. \\"Pursue rack PDU via acquisition\\" or \\"Do not pursue\\">",',
+        '  "state": "pursue" | "do-not-pursue" | "insufficient-evidence",',
+        '  "headline":  "<≤15 words; matches the state per rules above>",',
         '  "reasoning": "<3–5 sentences referencing the weakest link>"',
         "}",
         "",
-        "If Tier 1 rolled confidence ≤ 0.6, the headline must be 'Do not pursue",
-        "rack PDU' and Tier 2 has not been evaluated — do not invent a mode.",
-        "If Tier 1 confidence > 0.6 and Tier 2 was evaluated, the headline must",
-        "name the recommended mode (build/acquire/partner).",
+        "When state='insufficient-evidence', the reasoning must say what",
+        "evidence would resolve the gap (the user is going to act on this).",
       ].join("\n"),
     },
     {
@@ -198,15 +348,24 @@ async function callOpus(
     },
   ];
 
-  const parsed = await completeJson<{ headline: string; reasoning: string }>(
-    "decision",
-    messages,
-    { temperature: 0.3 },
-  );
+  const parsed = await completeJson<{
+    headline: string;
+    reasoning: string;
+    state: string;
+  }>("decision", messages, { temperature: 0.3 });
 
   if (typeof parsed.headline !== "string" || parsed.headline.length === 0) {
     throw new Error("decision: missing headline");
   }
   if (typeof parsed.reasoning !== "string") parsed.reasoning = "";
-  return parsed;
+  const state = isFinalDecisionState(parsed.state)
+    ? parsed.state
+    : "insufficient-evidence";
+  return { headline: parsed.headline, reasoning: parsed.reasoning, state };
+}
+
+function isFinalDecisionState(s: unknown): s is FinalDecisionState {
+  return (
+    s === "pursue" || s === "do-not-pursue" || s === "insufficient-evidence"
+  );
 }

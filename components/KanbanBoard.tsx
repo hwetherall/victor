@@ -65,9 +65,24 @@ export function KanbanBoard({ runId, onSelectHypothesis }: KanbanBoardProps) {
   // every node in the run (decision, hypotheses, evidence, vision-ingest).
   const modelsUsed = aggregateModels(q.data.nodes.map((n) => n.model_used));
 
+  const labelByNodeId = new Map(q.data.nodes.map((n) => [n.id, n.label]));
+
+  const gapList = aggregateGapList(
+    q.data.byType.sub_hypothesis,
+    sortedTier1,
+    subByParent,
+  );
+
   return (
     <div className="flex flex-col gap-6">
-      {decision && <DecisionCard node={decision} modelsUsed={modelsUsed} />}
+      {decision && (
+        <DecisionCard
+          node={decision}
+          modelsUsed={modelsUsed}
+          labelByNodeId={labelByNodeId}
+          gapList={gapList}
+        />
+      )}
 
       <section>
         <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-neutral-500">
@@ -114,27 +129,39 @@ export function KanbanBoard({ runId, onSelectHypothesis }: KanbanBoardProps) {
 
 import type { ModelMeta } from "@/lib/model-labels";
 
+interface GapGroup {
+  parentLabel: string;
+  actions: string[];
+}
+
 function DecisionCard({
   node,
   modelsUsed,
+  labelByNodeId,
+  gapList,
 }: {
   node: DecisionNode;
   modelsUsed: ModelMeta[];
+  labelByNodeId: Map<string, string>;
+  gapList: GapGroup[];
 }) {
   const content = node.content;
-  const passedThresholds = Object.entries(content.thresholdsMet ?? {}).filter(
-    ([, v]) => v === true,
+  const thresholdEntries = Object.entries(content.thresholds ?? {});
+  const metCount = thresholdEntries.filter(
+    ([, r]) => r.status === "met",
   ).length;
-  const totalThresholds = Object.keys(content.thresholdsMet ?? {}).length;
+  const totalThresholds =
+    thresholdEntries.length || Object.keys(content.thresholdsMet ?? {}).length;
+  const palette = decisionPalette(content.finalDecisionState);
 
   return (
-    <div className="rounded-xl border border-emerald-700/40 bg-gradient-to-br from-emerald-950/40 via-neutral-950 to-neutral-950 p-6">
+    <div className={`rounded-xl border ${palette.border} ${palette.bg} p-6`}>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-[10px] uppercase tracking-widest text-emerald-400">
-          Master Decision · Opus
+        <span className={`text-[10px] uppercase tracking-widest ${palette.label}`}>
+          {palette.eyebrow} · Opus
         </span>
         <span className="text-xs font-mono text-neutral-400">
-          thresholds {passedThresholds}/{totalThresholds}
+          thresholds {metCount}/{totalThresholds} met
         </span>
       </div>
       <p className="text-xl font-semibold text-neutral-50">
@@ -145,9 +172,22 @@ function DecisionCard({
           {content.reasoning}
         </p>
       )}
+      {content.weakestLinkLabel && (
+        <p className="mt-3 text-xs text-neutral-400">
+          <span className="text-neutral-500">Weakest link:</span>{" "}
+          {content.weakestLinkLabel}
+        </p>
+      )}
       <div className="mt-4 max-w-md">
         <ConfidenceMeter value={node.confidence} />
       </div>
+      {thresholdEntries.length > 0 && (
+        <ThresholdsBlock
+          entries={thresholdEntries}
+          labelByNodeId={labelByNodeId}
+        />
+      )}
+      {gapList.length > 0 && <GapList groups={gapList} />}
       {modelsUsed.length > 1 && (
         <div className="mt-5 border-t border-neutral-800/80 pt-3">
           <span className="text-[10px] uppercase tracking-widest text-neutral-500">
@@ -171,6 +211,178 @@ function DecisionCard({
       )}
     </div>
   );
+}
+
+interface DecisionPalette {
+  border: string;
+  bg: string;
+  label: string;
+  eyebrow: string;
+}
+
+function decisionPalette(
+  state: import("@/lib/schema").FinalDecisionState | undefined,
+): DecisionPalette {
+  switch (state) {
+    case "pursue":
+      return {
+        border: "border-emerald-700/40",
+        bg: "bg-gradient-to-br from-emerald-950/40 via-neutral-950 to-neutral-950",
+        label: "text-emerald-400",
+        eyebrow: "Master Decision · Pursue",
+      };
+    case "do-not-pursue":
+      return {
+        border: "border-rose-700/40",
+        bg: "bg-gradient-to-br from-rose-950/40 via-neutral-950 to-neutral-950",
+        label: "text-rose-400",
+        eyebrow: "Master Decision · Do not pursue",
+      };
+    case "insufficient-evidence":
+      return {
+        border: "border-amber-700/40",
+        bg: "bg-gradient-to-br from-amber-950/40 via-neutral-950 to-neutral-950",
+        label: "text-amber-400",
+        eyebrow: "Master Decision · Insufficient evidence",
+      };
+    default:
+      // Pre-v3 runs (no state field) fall back to the original emerald shell.
+      return {
+        border: "border-emerald-700/40",
+        bg: "bg-gradient-to-br from-emerald-950/40 via-neutral-950 to-neutral-950",
+        label: "text-emerald-400",
+        eyebrow: "Master Decision",
+      };
+  }
+}
+
+function GapList({ groups }: { groups: GapGroup[] }) {
+  return (
+    <div className="mt-5 border-t border-neutral-800/80 pt-3">
+      <span className="text-[10px] uppercase tracking-widest text-amber-400">
+        Diligence gaps to close
+      </span>
+      <ul className="mt-2 space-y-2 text-xs">
+        {groups.map((g) => (
+          <li key={g.parentLabel}>
+            <div className="text-neutral-400">{g.parentLabel}</div>
+            <ul className="mt-1 space-y-1 pl-3">
+              {g.actions.map((a, i) => (
+                <li key={i} className="leading-relaxed text-amber-200">
+                  • {a}
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function aggregateGapList(
+  subs: TreeNode[],
+  tier1: HypothesisNode[],
+  subByParent: Map<string, TreeNode[]>,
+): GapGroup[] {
+  const subToParent = new Map<string, string>();
+  for (const parent of tier1) {
+    for (const child of subByParent.get(parent.id) ?? []) {
+      subToParent.set(child.id, parent.id);
+    }
+  }
+  const parentLabelById = new Map(tier1.map((p) => [p.id, p.label]));
+
+  const groups = new Map<string, GapGroup>();
+  for (const s of subs) {
+    const action = (s.content as HypothesisContent).gapClosingAction;
+    if (!action) continue;
+    const parentId = subToParent.get(s.id);
+    if (!parentId) continue;
+    const parentLabel = parentLabelById.get(parentId) ?? "(unknown)";
+    const existing = groups.get(parentId);
+    if (existing) {
+      if (!existing.actions.includes(action)) existing.actions.push(action);
+    } else {
+      groups.set(parentId, { parentLabel, actions: [action] });
+    }
+  }
+  return [...groups.values()];
+}
+
+function ThresholdsBlock({
+  entries,
+  labelByNodeId,
+}: {
+  entries: [string, import("@/lib/schema").ThresholdRecord][];
+  labelByNodeId: Map<string, string>;
+}) {
+  return (
+    <div className="mt-5 border-t border-neutral-800/80 pt-3">
+      <span className="text-[10px] uppercase tracking-widest text-neutral-500">
+        Thresholds
+      </span>
+      <ul className="mt-2 space-y-1.5 text-xs">
+        {entries.map(([key, record]) => {
+          const sourceLabels = record.sourceLeafIds
+            .map((id) => labelByNodeId.get(id))
+            .filter((l): l is string => Boolean(l));
+          return (
+            <li key={key} className="font-mono">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="text-neutral-400">{key}</span>
+                <span className="text-neutral-300">
+                  <span className="text-neutral-500">target </span>
+                  {String(record.target)}
+                  <span className="mx-1.5 text-neutral-700">/</span>
+                  <span className="text-neutral-500">observed </span>
+                  <span className={statusClass(record.status)}>
+                    {formatObserved(record)}
+                  </span>
+                </span>
+              </div>
+              {sourceLabels.length > 0 && (
+                <div className="mt-0.5 pl-2 text-[10px] text-neutral-500">
+                  see {sourceLabels.join("; ")}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+function formatObserved(record: import("@/lib/schema").ThresholdRecord): string {
+  if (record.observed !== null && record.observed !== undefined) {
+    return String(record.observed);
+  }
+  switch (record.status) {
+    case "not-directly-tested":
+      return "not directly tested";
+    case "partially-tested":
+      return "partially tested";
+    case "met":
+      return "met";
+    case "not-met":
+      return "not met";
+  }
+}
+
+function statusClass(
+  status: import("@/lib/schema").ThresholdStatus,
+): string {
+  switch (status) {
+    case "met":
+      return "text-emerald-300";
+    case "not-met":
+      return "text-rose-300";
+    case "partially-tested":
+      return "text-amber-300";
+    case "not-directly-tested":
+      return "text-neutral-400 italic";
+  }
 }
 
 interface HypothesisCardProps {

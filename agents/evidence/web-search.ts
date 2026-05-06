@@ -11,6 +11,7 @@
 import { search, type SearchResult } from "@/lib/search";
 import { insforge } from "@/lib/db";
 import { MODELS, completeJson, type Message } from "@/lib/llm-client";
+import { buildTestDrivenQueries } from "@/lib/query-builder";
 import { scoreEvidence } from "./score";
 import type {
   EvidenceContent,
@@ -23,8 +24,13 @@ export interface CaseContext {
   caseId: string;
   caseTitle: string;
   caseQuestion: string;
+  /** Framework id from cases/<id>.yaml, used to load test-driven query
+   *  templates (improve.md §3). */
+  frameworkId: string;
   substitutions: Record<string, string>;
 }
+
+const MAX_TEST_DRIVEN_QUERIES = 4;
 
 const WEB_RESULTS_PER_LEAF = 6;
 const RAW_PER_QUERY = 4;
@@ -41,12 +47,29 @@ export async function gatherWebEvidence(
     return [];
   }
 
-  const claim = (hypothesis.content as HypothesisContent).claim;
-  const baseQuery = buildQuery(hypothesis.label, ctx.substitutions);
+  const content = hypothesis.content as HypothesisContent;
+  const claim = content.claim;
 
-  // Generate 2 query variants via Mistral; combine with the base for 3 total.
-  const variants = await expandQueries(hypothesis.label, claim, ctx.substitutions);
-  const queries = [baseQuery, ...variants].slice(0, 3);
+  // Test-driven path (improve.md §3): when the test.metric matches a template,
+  // drive search from the test variable, not the topic. Mistral expansion is
+  // reserved for the fallback path where no template exists.
+  const testDriven = buildTestDrivenQueries(content, {
+    frameworkId: ctx.frameworkId,
+    substitutions: ctx.substitutions,
+  }).slice(0, MAX_TEST_DRIVEN_QUERIES);
+
+  let queries: string[];
+  if (testDriven.length > 0) {
+    queries = testDriven;
+  } else {
+    const baseQuery = buildQuery(hypothesis.label, ctx.substitutions);
+    const variants = await expandQueries(
+      hypothesis.label,
+      claim,
+      ctx.substitutions,
+    );
+    queries = [baseQuery, ...variants].slice(0, 3);
+  }
 
   // Run all queries in parallel.
   const settled = await Promise.allSettled(
@@ -78,6 +101,10 @@ export async function gatherWebEvidence(
       title: r.title,
       body: (r.content ?? r.snippet).slice(0, MAX_CONTENT_CHARS),
       origin: r.url,
+      // Web sources default to third-party. Per-domain overrides could go
+      // here later (e.g. tag a vendor's own marketing page as
+      // pre-disposed-favourable).
+      sourceStake: "third-party" as const,
     })),
   );
 
@@ -100,7 +127,7 @@ export async function gatherWebEvidence(
           uri: result.url,
           title: result.title.slice(0, 200),
           content_extract: fullContent,
-          metadata: { stake: "neutral" },
+          metadata: { stake: "third-party" },
         },
       ])
       .select();
@@ -117,6 +144,8 @@ export async function gatherWebEvidence(
       supports: item.supports,
       strength: item.strength,
       sourceQuote: item.sourceQuote,
+      sourceStake: item.sourceStake,
+      rawStrength: item.rawStrength,
     };
     const { data: evRows, error: evErr } = await insforge.database
       .from("tree_nodes")

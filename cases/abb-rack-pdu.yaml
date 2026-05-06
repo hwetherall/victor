@@ -14,11 +14,11 @@ substitutions:
   IRR_HURDLE: 15%
 
 weights:
-  marketSize: 0.25
-  techResilience: 0.25
-  roi: 0.20
-  timeToMarket: 0.15
-  strategicFit: 0.15
+  market-attractive: 0.25
+  can-win: 0.20
+  can-reach: 0.15
+  financials-clear: 0.20
+  tech-resilient: 0.20
 
 thresholds:
   minRevenue: 100000000

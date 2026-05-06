@@ -118,18 +118,78 @@ export async function completeJson<T = unknown>(
   options: CompletionOptions = {},
 ): Promise<T> {
   const raw = await completeAs(role, messages, { ...options, jsonMode: true });
-  const stripped = stripJsonFences(raw);
+  return parseModelJson<T>(role, raw);
+}
+
+/**
+ * Robust JSON extractor for model outputs. Models occasionally:
+ *  - Wrap JSON in a single ```json ... ``` fence (handled by old code)
+ *  - Emit MULTIPLE fenced blocks with free text between (a "first attempt"
+ *    plus a self-corrected "let me redo that" — the failure mode that
+ *    blew up evaluator runs in production)
+ *  - Add a sentence of preamble or postamble around an otherwise-valid JSON
+ *    object
+ *
+ * Strategy: try variants in increasing tolerance, return the FIRST one that
+ * parses. If multiple fenced blocks exist we prefer the LAST — the model's
+ * correction usually arrives last.
+ */
+export function extractModelJson(raw: string): unknown {
+  const trimmed = raw.trim();
+
+  // 1. Direct parse — the happy path.
+  const direct = tryParse(trimmed);
+  if (direct.ok) return direct.value;
+
+  // 2. All fenced ```json ... ``` (or plain ``` ... ```) blocks. Last-first
+  //    so a self-correction wins over the original.
+  const fenceRe = /```(?:json)?\s*([\s\S]*?)\s*```/g;
+  const blocks: string[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = fenceRe.exec(trimmed)) !== null) blocks.push(m[1].trim());
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const r = tryParse(blocks[i]);
+    if (r.ok) return r.value;
+  }
+
+  // 3. Embedded object/array — find the largest balanced {…} or […]
+  //    substring and try that. Cheap heuristic: greedy match from first
+  //    brace to last brace, parser does the validation.
+  for (const re of [/\{[\s\S]*\}/, /\[[\s\S]*\]/]) {
+    const match = trimmed.match(re);
+    if (match) {
+      const r = tryParse(match[0]);
+      if (r.ok) return r.value;
+    }
+  }
+
+  throw new Error("could not extract JSON from model response");
+}
+
+function tryParse(s: string): { ok: true; value: unknown } | { ok: false } {
   try {
-    return JSON.parse(stripped) as T;
+    return { ok: true, value: JSON.parse(s) };
+  } catch {
+    return { ok: false };
+  }
+}
+
+function parseModelJson<T>(
+  role: AgentRole,
+  raw: string,
+  fnName: "completeJson" | "completeMultimodalJson" = "completeJson",
+): T {
+  try {
+    return extractModelJson(raw) as T;
   } catch (e) {
     throw new Error(
-      `completeJson(${role}): JSON.parse failed (${e instanceof Error ? e.message : e})\n` +
+      `${fnName}(${role}): JSON extraction failed (${e instanceof Error ? e.message : e})\n` +
         `raw response:\n${raw}`,
     );
   }
 }
 
-/** Strip surrounding ```json ... ``` or ``` ... ``` fences if present. */
+/** @deprecated kept for any external callers; new code should use extractModelJson. */
 export function stripJsonFences(s: string): string {
   const trimmed = s.trim();
   const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
@@ -192,13 +252,5 @@ export async function completeMultimodalJson<T = unknown>(
     ...options,
     jsonMode: true,
   });
-  const stripped = stripJsonFences(raw);
-  try {
-    return JSON.parse(stripped) as T;
-  } catch (e) {
-    throw new Error(
-      `completeMultimodalJson(${role}): JSON.parse failed (${e instanceof Error ? e.message : e})\n` +
-        `raw response:\n${raw}`,
-    );
-  }
+  return parseModelJson<T>(role, raw, "completeMultimodalJson");
 }

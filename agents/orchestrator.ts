@@ -75,7 +75,9 @@ async function executeRun(
     await parseBrief(caseConfigId);
     const binding = await bindFramework(caseConfigId);
     const caseConfig = loadCase(caseConfigId);
-    const tree = await buildTree(dbCaseId, binding, caseConfig.weights);
+    // Case yaml keys are now slot ids directly (improve.md §4 Option A).
+    const caseWeightsBySlot = caseConfig.weights;
+    const tree = await buildTree(dbCaseId, binding, caseWeightsBySlot);
 
     // Stage 4: real evidence fanout. For each sub-hypothesis leaf, run web
     // search + doc retrieval in parallel. Promise.allSettled per SPEC §12
@@ -85,6 +87,7 @@ async function executeRun(
       caseId: dbCaseId,
       caseTitle: caseConfig.title,
       caseQuestion: caseConfig.question,
+      frameworkId: caseConfig.frameworkId,
       substitutions: caseConfig.substitutions,
     };
     await Promise.allSettled(
@@ -112,7 +115,6 @@ async function executeRun(
 
     // Stage 6: refetch tree, roll up to hypothesis + decision level.
     const refreshed = await fetchTree(dbCaseId);
-    const caseWeightsBySlot = mapCaseWeightsToSlots(caseConfig.weights);
     const rollup = rollupConfidence(refreshed, caseWeightsBySlot);
 
     // Stage 7: persist hypothesis-level confidences.
@@ -245,25 +247,3 @@ async function markNodeFailed(nodeId: string, reason: string): Promise<void> {
   console.warn(`tree_node ${nodeId} marked failed: ${reason}`);
 }
 
-// ─── Case-level weight key → framework slot id mapping ───────────────────────
-
-const CASE_WEIGHT_TO_SLOT: Record<string, string> = {
-  marketSize: "market-attractive",
-  strategicFit: "can-win",
-  timeToMarket: "can-reach",
-  roi: "financials-clear",
-  techResilience: "tech-resilient",
-};
-
-function mapCaseWeightsToSlots(
-  caseWeights: Record<string, number>,
-): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const [k, v] of Object.entries(caseWeights)) {
-    const slotId = CASE_WEIGHT_TO_SLOT[k];
-    if (slotId) out[slotId] = v;
-  }
-  return out;
-}
-
-export const __test = { mapCaseWeightsToSlots, CASE_WEIGHT_TO_SLOT };

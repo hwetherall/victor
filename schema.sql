@@ -9,7 +9,7 @@ create table cases (
   title text not null,
   question text not null,
   framework_id text not null,        -- references frameworks/*.yaml
-  weights jsonb not null,             -- {marketSize: 0.25, techResilience: 0.25, ...}
+  weights jsonb not null,             -- keyed by framework slot id, e.g. {market-attractive: 0.25, tech-resilient: 0.20, ...}
   thresholds jsonb not null,          -- {minRevenue: 100000000, timeYears: 3, ...}
   brief_extract jsonb,                -- structured output of brief parser
   created_at timestamptz default now()

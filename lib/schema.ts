@@ -28,12 +28,60 @@ export type EvidenceSupports = "for" | "against" | "mixed";
 
 export type EvidenceStrength = "weak" | "moderate" | "strong";
 
+/** Bias of the source the evidence came from. (improve.md §5.)
+ *
+ *  - `third-party` — neutral source (web by default)
+ *  - `neutral-advocate` — author of the analysis (Innovera brief); no
+ *    financial interest in outcome → no adjustment applied
+ *  - `pre-disposed-favourable` — author benefits from a yes (ABB deck);
+ *    supportive findings demoted one step, surprising findings promoted
+ *  - `pre-disposed-against` — author benefits from a no; mirror rule
+ */
+export type SourceStake =
+  | "third-party"
+  | "neutral-advocate"
+  | "pre-disposed-favourable"
+  | "pre-disposed-against";
+
 // ─── Content payloads (SPEC §5.2) ────────────────────────────────────────────
 
+export type ThresholdStatus =
+  | "met"
+  | "not-met"
+  | "not-directly-tested"
+  | "partially-tested";
+
+export interface ThresholdRecord {
+  target: number | string;
+  observed: number | string | null;
+  status: ThresholdStatus;
+  /** Tree-node ids of the sub-hypotheses that should test this threshold. */
+  sourceLeafIds: string[];
+}
+
+/** The three discrete decision states. NO `pursue-with-conditions` —
+ *  explicitly banned product decision (2026-05-06): the system must commit
+ *  or admit uncertainty, not soften a recommendation. */
+export type FinalDecisionState =
+  | "pursue"
+  | "do-not-pursue"
+  | "insufficient-evidence";
+
 export interface DecisionContent {
+  /** Free-form headline (e.g. "Pursue rack PDU via acquisition"). */
   finalDecision: string;
+  /** Discrete state for state-aware UI and downstream tooling. v3+ runs
+   *  populate this; pre-v3 runs may leave it undefined. (improve.md §7.) */
+  finalDecisionState?: FinalDecisionState;
   reasoning: string;
   weakestLinkNodeId: string;
+  /** Hypothesis label resolved at decision time. Renderers should prefer this
+   *  over weakestLinkNodeId for human-facing callouts. (improve.md §6.) */
+  weakestLinkLabel?: string;
+  /** Per-threshold record: target, observed value (or status), source leaves.
+   *  Renderers should prefer this over thresholdsMet. (improve.md §10.) */
+  thresholds?: Record<string, ThresholdRecord>;
+  /** @deprecated retained for backwards compat with pre-v3 runs. */
   thresholdsMet: Record<string, boolean>;
 }
 
@@ -46,7 +94,24 @@ export interface HypothesisTest {
   horizon?: string;
 }
 
-export type ModeDependence = 'agnostic' | 'requires_mode';
+/** Whether a hypothesis's truth depends on the entry mode (build / buy /
+ *  partner) chosen at Tier 2. (improve.md §9.)
+ *
+ *  - `agnostic` — claim is true or false regardless of mode
+ *  - `build-only` — only meaningful when ABB builds the product itself
+ *  - `build-or-partner` — relevant when building or partnering, not when buying
+ *  - `buy-or-partner` — relevant when buying or partnering, not when building
+ *  - `mode-conditional` — the answer differs sharply across modes
+ *  - `requires_mode` — legacy alias retained for pre-v3 data; treat as
+ *    mode-conditional in new code
+ */
+export type ModeDependence =
+  | 'agnostic'
+  | 'build-only'
+  | 'build-or-partner'
+  | 'buy-or-partner'
+  | 'mode-conditional'
+  | 'requires_mode';
 
 export interface HypothesisContent {
   claim: string;
@@ -56,13 +121,24 @@ export interface HypothesisContent {
   insightAtStake: string;
   templateId?: string;
   rationale?: string;
+  /** Single-sentence prescription describing what evidence would close the
+   *  diligence gap. Populated by the evaluator only when confidence < 0.5.
+   *  (improve.md §8.) */
+  gapClosingAction?: string;
 }
 
 export interface EvidenceContent {
   finding: string;
   supports: EvidenceSupports;
+  /** Strength after stake adjustment (improve.md §5). The pre-adjustment
+   *  score is preserved in `rawStrength` for transparency. */
   strength: EvidenceStrength;
   sourceQuote?: string;
+  /** Bias of the originating source. Set at scoring time. */
+  sourceStake?: SourceStake;
+  /** Pre-stake-adjustment strength as scored by the LLM. Present only when
+   *  the stake adjustment changed the strength. */
+  rawStrength?: EvidenceStrength;
 }
 
 export interface QuestionContent {

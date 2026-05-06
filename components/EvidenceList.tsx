@@ -11,6 +11,7 @@ import type {
   EvidenceStrength,
   HypothesisContent,
   Source,
+  SourceStake,
 } from "@/lib/schema";
 import { modelMeta } from "@/lib/model-labels";
 import { ConfidenceMeter } from "./ConfidenceMeter";
@@ -99,7 +100,14 @@ export function EvidenceList({
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <SupportsBadge supports={c.supports} />
-                      <StrengthBadge strength={c.strength} />
+                      <StrengthBadge
+                        strength={c.strength}
+                        rawStrength={c.rawStrength}
+                      />
+                      <StakeBadge
+                        sourceStake={c.sourceStake}
+                        supports={c.supports}
+                      />
                       {item.node.model_used && (
                         <ModelBadge modelUsed={item.node.model_used} />
                       )}
@@ -142,20 +150,73 @@ function SupportsBadge({ supports }: { supports: EvidenceSupports }) {
   );
 }
 
-function StrengthBadge({ strength }: { strength: EvidenceStrength }) {
+function StrengthBadge({
+  strength,
+  rawStrength,
+}: {
+  strength: EvidenceStrength;
+  rawStrength?: EvidenceStrength;
+}) {
   const cls =
     strength === "strong"
       ? "border-neutral-300 text-neutral-200"
       : strength === "moderate"
         ? "border-neutral-500 text-neutral-400"
         : "border-neutral-700 text-neutral-500";
+  // Show the pre-adjustment strength if the stake rule changed it.
+  const adjusted = rawStrength && rawStrength !== strength;
   return (
     <span
       className={`rounded border px-1.5 py-0.5 text-[10px] uppercase tracking-wider ${cls}`}
+      title={
+        adjusted ? `stake-adjusted from ${rawStrength}` : undefined
+      }
     >
       {strength}
+      {adjusted && (
+        <span className="ml-1 text-neutral-600">(was {rawStrength})</span>
+      )}
     </span>
   );
+}
+
+function StakeBadge({
+  sourceStake,
+  supports,
+}: {
+  sourceStake?: SourceStake;
+  supports: EvidenceSupports;
+}) {
+  if (!sourceStake) return null;
+  if (sourceStake === "third-party" || sourceStake === "neutral-advocate") {
+    return null;
+  }
+  const biasDirection: EvidenceSupports =
+    sourceStake === "pre-disposed-favourable" ? "for" : "against";
+  // Two distinct cases worth surfacing:
+  //  - aligned with bias → "biased source" (suspect)
+  //  - against bias → "against own bias" (high information value)
+  if (supports === biasDirection) {
+    return (
+      <span
+        className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-300"
+        title={`Source stake: ${sourceStake} — supports its own bias`}
+      >
+        biased source
+      </span>
+    );
+  }
+  if (supports !== "mixed") {
+    return (
+      <span
+        className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-[10px] font-medium text-cyan-300"
+        title={`Source stake: ${sourceStake} — finding goes against the source's bias`}
+      >
+        against own bias
+      </span>
+    );
+  }
+  return null;
 }
 
 function sourceLabelFor(source: Source | null): string {

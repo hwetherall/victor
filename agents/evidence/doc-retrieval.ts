@@ -10,6 +10,7 @@ import type {
   EvidenceContent,
   HypothesisContent,
   SourceMetadata,
+  SourceStake,
   TreeNode,
 } from "@/lib/schema";
 import type { CaseContext } from "./web-search";
@@ -42,6 +43,7 @@ export async function gatherDocEvidence(
         title: c.title ?? "(unknown)",
         body: c.content_extract ?? "",
         origin: [pageInfo, meta.author, meta.stake].filter(Boolean).join(" · "),
+        sourceStake: coerceSourceStake(meta.stake),
       };
     }),
   );
@@ -57,6 +59,8 @@ export async function gatherDocEvidence(
       supports: item.supports,
       strength: item.strength,
       sourceQuote: item.sourceQuote,
+      sourceStake: item.sourceStake,
+      rawStrength: item.rawStrength,
     };
 
     const labelBase = chunk.title ?? "Source";
@@ -106,4 +110,19 @@ export async function gatherDocEvidence(
   }
 
   return evidenceNodes;
+}
+
+/** Map a free-text stake string from source metadata to the schema's
+ *  SourceStake union. Unknown values fall back to undefined (no adjustment).
+ */
+function coerceSourceStake(raw: unknown): SourceStake | undefined {
+  if (
+    raw === "third-party" ||
+    raw === "neutral-advocate" ||
+    raw === "pre-disposed-favourable" ||
+    raw === "pre-disposed-against"
+  ) {
+    return raw;
+  }
+  return undefined;
 }

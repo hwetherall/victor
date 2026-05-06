@@ -117,28 +117,39 @@ export function HypothesisDrilldown({
       </div>
 
       <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        {subs.map((s) => (
-          <li key={s.id}>
-            <button
-              type="button"
-              onClick={() => onSelectSub(s.id)}
-              className="flex w-full flex-col gap-2 rounded-lg border border-neutral-800 bg-neutral-950 p-4 text-left transition-colors hover:border-neutral-600"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-mono text-neutral-500">
-                  {s.label}
-                </span>
-                <span className="text-[11px] text-neutral-500">
-                  {evCountBySub.get(s.id) ?? 0} evidence
-                </span>
-              </div>
-              <p className="line-clamp-2 text-sm text-neutral-200">
-                {(s.content as HypothesisContent).claim ?? s.label}
-              </p>
-              <ConfidenceMeter value={s.confidence} size="sm" />
-            </button>
-          </li>
-        ))}
+        {subs.map((s) => {
+          const subContent = s.content as HypothesisContent;
+          return (
+            <li key={s.id}>
+              <button
+                type="button"
+                onClick={() => onSelectSub(s.id)}
+                className="flex w-full flex-col gap-2 rounded-lg border border-neutral-800 bg-neutral-950 p-4 text-left transition-colors hover:border-neutral-600"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono text-neutral-500">
+                    {s.label}
+                  </span>
+                  <span className="text-[11px] text-neutral-500">
+                    {evCountBySub.get(s.id) ?? 0} evidence
+                  </span>
+                </div>
+                <p className="line-clamp-2 text-sm text-neutral-200">
+                  {subContent.claim ?? s.label}
+                </p>
+                <ConfidenceMeter value={s.confidence} size="sm" />
+                {subContent.gapClosingAction && (
+                  <div className="mt-1 rounded border border-amber-700/40 bg-amber-950/30 p-2 text-[11px] leading-relaxed text-amber-200">
+                    <span className="font-medium uppercase tracking-wider text-amber-400">
+                      To close this gap:
+                    </span>{" "}
+                    {subContent.gapClosingAction}
+                  </div>
+                )}
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

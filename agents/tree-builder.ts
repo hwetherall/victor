@@ -4,9 +4,11 @@
 
 import { insforge } from "@/lib/db";
 import type { DecisionContent, HypothesisContent, TreeNode } from "@/lib/schema";
+import { truncateAtWordBoundary } from "@/lib/text";
 import type { FrameworkBinding } from "./framework-binder";
 
 const DECISION_LABEL = "Should ABB pursue rack PDU? If yes, how?";
+const LABEL_MAX_CHARS = 60;
 
 const EMPTY_DECISION_CONTENT: DecisionContent = {
   finalDecision: "",
@@ -61,7 +63,7 @@ export async function buildTree(
       case_id: dbCaseId,
       parent_id: decisionRow.id,
       type: "hypothesis",
-      label: slot.claim.substring(0, 60) + (slot.claim.length > 60 ? "..." : ""),
+      label: truncateAtWordBoundary(slot.claim, LABEL_MAX_CHARS),
       content: slotToHypothesisContent(slot),
       weight,
     });
@@ -78,7 +80,7 @@ export async function buildTree(
         case_id: dbCaseId,
         parent_id: parent.id,
         type: "sub_hypothesis",
-        label: sub.claim.substring(0, 60) + (sub.claim.length > 60 ? "..." : ""),
+        label: truncateAtWordBoundary(sub.claim, LABEL_MAX_CHARS),
         content: slotToHypothesisContent(sub),
         weight: null,
       });

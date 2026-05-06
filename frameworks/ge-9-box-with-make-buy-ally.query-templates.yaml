@@ -1,0 +1,94 @@
+# Test-driven web-search templates for GE 9-box × Make-Buy-Ally.
+# Loaded by lib/query-builder.ts when a sub-hypothesis's test.metric matches a
+# key below. Substitutions: [COMPANY], [PRODUCT], [SCOPE], [HORIZON],
+# [PARITY_BENCHMARKS], [THRESHOLD_LOWER], [THRESHOLD_UPPER], [IRR_HURDLE]
+# (from cases/<id>.yaml), plus [TARGET], [METRIC], [CLAIM] derived from the
+# test/claim fields.
+#
+# Authoring principle: each template should bias the search toward the test
+# variable, not the hypothesis topic. SH4.2's NPV question should pull capex
+# disclosures, not market-size charts. (improve.md §3.)
+
+templates:
+  # ── Market-attractive (H1) ───────────────────────────────────────────────
+  accessible_revenue:
+    - "[PRODUCT] addressable market size [SCOPE] revenue forecast"
+    - "rack PDU TAM SAM SOM hyperscaler colocation revenue [HORIZON]"
+    - "[COMPANY] [PRODUCT] revenue opportunity bottom-up share capture"
+
+  accessible_share_capture_revenue:
+    - "rack PDU new entrant market share benchmark first three years"
+    - "PDU vendor share gain hyperscaler displacement Vertiv Schneider"
+    - "data center power distribution new entrant top-quartile share capture"
+
+  market_cagr:
+    - "[PRODUCT] CAGR market growth forecast [SCOPE] 2025 2030"
+    - "rack PDU CAGR data center power distribution outlook"
+    - "intelligent PDU CAGR growth driver AI data center hyperscaler"
+
+  intelligent_segment_share:
+    - "intelligent PDU segment share basic vs metered vs switched ASP differential"
+    - "smart PDU vs basic PDU market share premium pricing differential"
+    - "rack PDU segment mix margin profile outlet level switching"
+
+  # ── Can-win (H2) ─────────────────────────────────────────────────────────
+  months_to_parity_product:
+    - "[COMPANY] rack PDU teardown comparison [PARITY_BENCHMARKS] feature matrix"
+    - "[COMPANY] [PRODUCT] specs vs Vertiv Geist Schneider NetShelter Eaton"
+    - "rack PDU remote monitoring outlet level switching 3-phase 60A spec comparison"
+    - "[COMPANY] PDU MNS portfolio competitive parity assessment"
+
+  approved_vendor_status_count:
+    - "[COMPANY] approved vendor list AWS Azure GCP Meta Oracle hyperscaler procurement"
+    - "[COMPANY] preferred supplier framework agreement Equinix Digital Realty colocation"
+    - "rack PDU vendor list hyperscaler design-win [COMPANY]"
+    - "[COMPANY] data center electrical infrastructure approved vendor status"
+
+  # ── Can-reach (H3) ───────────────────────────────────────────────────────
+  it_channel_coverage_pct:
+    - "[COMPANY] IT channel partners rack PDU distribution data center"
+    - "[COMPANY] go-to-market IT data center sales coverage"
+    - "rack PDU channel partner network hyperscaler colocation reach"
+
+  existing_it_relationships_pct:
+    - "[COMPANY] electrical sales force IT decision-maker relationships"
+    - "[COMPANY] cross-sell electrical to IT enterprise data center"
+    - "[COMPANY] account coverage IT buyers vs electrical buyers data center"
+
+  # ── Financials-clear (H4) ────────────────────────────────────────────────
+  blended_gross_margin:
+    - "rack PDU gross margin SKU mix intelligent basic blended"
+    - "[PARITY_BENCHMARKS] PDU margin profile public disclosures"
+    - "intelligent PDU vs basic PDU margin differential channel leakage"
+    - "rack PDU pricing power channel margin distribution"
+
+  # SH4.2 — the NPV / IRR question. Spec acceptance: ≥2 items on IRR/NPV/
+  # payback or comparable plant economics. Keep these queries OFF market size.
+  npv_at_hurdle:
+    - "rack PDU plant economics capex tooling certification new entrant"
+    - "[PARITY_BENCHMARKS] capital expenditure R&D revenue ratio PDU"
+    - "rack PDU bottom-up investment model WACC payback period"
+    - "data center power distribution IRR benchmark new product launch"
+    - "rack PDU manufacturing capex working capital revenue ramp [HORIZON]"
+
+  # ── Tech-resilient (H5) ──────────────────────────────────────────────────
+  density_band_penetration:
+    - "data center rack density 100kW 200kW migration timeline AI cluster"
+    - "high density rack PDU AI hyperscaler power density forecast"
+    - "rack power density band penetration hyperscaler 2026 2028"
+
+  product_roadmap_resilience:
+    - "rack PDU product roadmap density distribution scenarios option value"
+    - "PDU roadmap AC DC migration hyperscaler [HORIZON]"
+
+  # SH5.2 — DC distribution. Spec acceptance: ≥1 item on OCP/ODCC roadmap.
+  dc_distribution_penetration:
+    - "800VDC bus adoption OCP ODCC hyperscaler 2026 2027 2028"
+    - "DC distribution data center 48VDC roadmap AI cluster"
+    - "rack PDU AC vs DC architecture timeline hyperscaler"
+    - "open compute project DC bus standard adoption forecast"
+
+# Generic fallback when test.metric has no dedicated template. The original
+# claim-based query path picks up here.
+fallback:
+  - "[COMPANY] [PRODUCT] [CLAIM]"
