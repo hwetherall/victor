@@ -1,0 +1,37 @@
+id: ge-9-box-with-make-buy-ally
+name: GE Market Attractiveness × Make-Buy-Ally
+applicableTo: [market-entry-with-mode]
+tiers:
+  - id: tier-1
+    name: Should we pursue?
+    type: AND-gate
+    slots:
+      - id: market-attractive
+        templateClaim: "The accessible market in [SCOPE] is large and growing enough to clear [THRESHOLD] within [TIMEFRAME]"
+        weight: 0.25
+        decomposition:
+          - "TAM-SAM-SOM bridge clears threshold"
+          - "Growth trajectory is favourable"
+          - "Sub-segment mix is favourable"
+      - id: can-win
+        templateClaim: "[COMPANY] can build a winning product in [PRODUCT]"
+        weight: 0.20
+        decomposition:
+          - "Capability gap is closeable"
+          - "Brand permission exists in target segments"
+          - "Cost position is competitive"
+      - id: can-reach
+        templateClaim: "[COMPANY] can reach customers fast enough via available channels"
+        weight: 0.15
+      - id: financials-clear
+        templateClaim: "Unit economics and investment clear [COMPANY]'s IRR hurdle"
+        weight: 0.20
+      - id: tech-resilient
+        templateClaim: "The product will not be obsolete within [TIMEFRAME]"
+        weight: 0.20
+  - id: tier-2
+    name: Build, buy, or partner?
+    type: COMPARATIVE
+    activatesIf: tier-1.confidence > 0.6
+    options: [build, buy, partner]
+    criteria: [speed, control, capability_fit, capital, risk]

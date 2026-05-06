@@ -1,0 +1,34 @@
+caseId: abb-rack-pdu
+title: ABB Rack PDU Market Entry
+question: "Should ABB pursue the rack PDU business, and if yes, should it be built internally, acquired, or partnered into?"
+frameworkId: ge-9-box-with-make-buy-ally
+
+substitutions:
+  COMPANY: ABB
+  PRODUCT: rack PDU (with emphasis on intelligent/managed segment)
+  SCOPE: global data center market, accessible geographies excluding restricted markets
+  THRESHOLD: $100M/year revenue
+  TIMEFRAME: 3 years
+
+weights:
+  marketSize: 0.25
+  techResilience: 0.25
+  roi: 0.20
+  timeToMarket: 0.15
+  strategicFit: 0.15
+
+thresholds:
+  minRevenue: 100000000
+  timeYears: 3
+  irrHurdle: 0.15
+  internalDevMaxYears: 3
+
+inputDocs:
+  - path: docs/abb-case-brief.pdf
+    type: brief
+    author: Innovera
+    stake: neutral-advocate
+  - path: docs/abb-rack-pdu-deck.pdf
+    type: pitch
+    author: ABB Energy Distribution BL
+    stake: pre-disposed-favourable      # noted: slide 6 pre-concludes
