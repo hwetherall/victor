@@ -20,6 +20,7 @@ import type {
   Source,
   TreeNode,
 } from "../lib/schema";
+import type { Framework } from "../lib/framework-registry";
 
 loadEnv({ path: ".env.local" });
 
@@ -36,13 +37,14 @@ interface EvidenceLinkWithSource {
 }
 
 async function main() {
-  const [{ insforge }, { loadCase }] = await Promise.all([
+  const [{ insforge }, { loadCase, loadFramework }] = await Promise.all([
     import("../lib/db"),
     import("../lib/framework-registry"),
   ]);
 
   const args = parseArgs(process.argv.slice(2));
   const caseConfig = loadCase(args.caseConfigId);
+  const framework = loadFramework(caseConfig.frameworkId);
 
   const run = args.runId
     ? await fetchRunById(insforge, args.runId)
@@ -62,6 +64,7 @@ async function main() {
     linksByEvidenceId,
     mickyOutput: mickyRun?.output ?? null,
     stripSourceBias: args.stripSourceBias,
+    framework,
   });
 
   const outPath =
@@ -231,12 +234,15 @@ function renderReport(input: {
   linksByEvidenceId: Map<string, EvidenceLinkWithSource[]>;
   mickyOutput: MickyOutput | null;
   stripSourceBias: boolean;
+  framework: Framework;
 }): string {
   const childrenByParentId = groupChildren(input.nodes);
   const decision = input.nodes.find((n) => n.type === "decision");
   const hypotheses = input.nodes
     .filter((n) => n.type === "hypothesis")
     .sort((a, b) => (Number(b.weight) || 0) - (Number(a.weight) || 0));
+
+  const slotById = buildSlotIndex(input.framework);
 
   const lines: string[] = [];
   if (input.mickyOutput) {
@@ -253,6 +259,9 @@ function renderReport(input: {
   lines.push(`**Started:** ${formatDate(input.run.started_at)}`);
   if (input.run.completed_at) lines.push(`**Completed:** ${formatDate(input.run.completed_at)}`);
   if (input.run.error) lines.push(`**Run error:** ${input.run.error}`);
+  lines.push(
+    `**Framework:** ${input.framework.name} (\`${input.framework.id}\`) — Tier 1 of ${input.framework.tiers.length}`,
+  );
   lines.push("");
 
   lines.push("## Decision");
@@ -266,6 +275,7 @@ function renderReport(input: {
       input.nodes.find((n) => n.id === content.weakestLinkNodeId)?.label ??
       content.weakestLinkNodeId;
     lines.push(`**Weakest link:** ${weakestLabel}`);
+    lines.push(formatTier2GateLine(input.framework, decision.confidence, content));
     lines.push("");
     lines.push(content.reasoning || "_No reasoning captured._");
     lines.push("");
@@ -323,6 +333,7 @@ function renderReport(input: {
       input.linksByEvidenceId,
       3,
       input.mickyOutput,
+      slotById,
     );
   }
 
@@ -336,12 +347,15 @@ function renderHypothesisSection(
   linksByEvidenceId: Map<string, EvidenceLinkWithSource[]>,
   headingLevel: number,
   mickyOutput: MickyOutput | null = null,
+  slotById: Map<string, SlotIndexEntry> = new Map(),
 ) {
   if (node.type !== "hypothesis" && node.type !== "sub_hypothesis") return;
 
   const content = node.content as HypothesisContent;
   lines.push(`${"#".repeat(headingLevel)} ${node.label}`);
   lines.push("");
+  const slotLine = formatSlotLine(node.type, content, node.weight, slotById);
+  if (slotLine) lines.push(slotLine);
   lines.push(`**Confidence:** ${formatConfidence(node.confidence)}`);
   if (node.weight !== null) lines.push(`**Weight:** ${formatPercent(Number(node.weight))}`);
   lines.push(`**Status:** ${node.status}`);
@@ -394,6 +408,7 @@ function renderHypothesisSection(
       linksByEvidenceId,
       headingLevel + 1,
       mickyOutput,
+      slotById,
     );
   }
 }
@@ -575,6 +590,73 @@ function formatThresholdObserved(record: {
 function formatTest(test: HypothesisContent["test"]): string {
   const horizon = test.horizon ? ` over ${test.horizon}` : "";
   return `${test.type} on ${test.metric}; target ${String(test.target)}${horizon}`;
+}
+
+interface SlotIndexEntry {
+  slotId: string;
+  tierLabel: string;
+  parentSlotId?: string;
+  parentWeight?: number;
+}
+
+function buildSlotIndex(framework: Framework): Map<string, SlotIndexEntry> {
+  const out = new Map<string, SlotIndexEntry>();
+  const tier1 = framework.tiers[0];
+  const tierLabel = "Tier 1";
+  for (const slot of tier1.slots) {
+    out.set(slot.id, { slotId: slot.id, tierLabel });
+    for (const sub of slot.decomposition ?? []) {
+      out.set(sub.id, {
+        slotId: sub.id,
+        tierLabel,
+        parentSlotId: slot.id,
+        parentWeight: slot.weight,
+      });
+    }
+  }
+  return out;
+}
+
+function formatSlotLine(
+  nodeType: "hypothesis" | "sub_hypothesis",
+  content: HypothesisContent,
+  nodeWeight: number | null,
+  slotById: Map<string, SlotIndexEntry>,
+): string | null {
+  if (!content.templateId) return null;
+  const entry = slotById.get(content.templateId);
+  if (!entry) return null;
+  const parts: string[] = [entry.tierLabel];
+  if (nodeType === "hypothesis" && nodeWeight !== null && !Number.isNaN(Number(nodeWeight))) {
+    parts.push(`weight ${formatPercent(Number(nodeWeight))}`);
+  } else if (nodeType === "sub_hypothesis" && entry.parentSlotId) {
+    parts.push(`under \`${entry.parentSlotId}\``);
+  }
+  return `**Slot:** \`${entry.slotId}\` (${parts.join(" · ")})`;
+}
+
+function formatTier2GateLine(
+  framework: Framework,
+  rolledConfidence: number | null,
+  decisionContent: DecisionContent,
+): string {
+  const tier2 = framework.tiers[1];
+  // activatesIf is shaped like "tier-1.confidence > 0.6"; pull the rightmost
+  // numeric literal so the "1" in "tier-1" doesn't shadow the real gate.
+  const gateMatch = /([0-9]*\.?[0-9]+)\s*$/.exec(tier2.activatesIf.trim());
+  const gate = gateMatch ? Number(gateMatch[1]) : 0.6;
+  const optionsLabel = tier2.options
+    .map((o) => o.charAt(0).toUpperCase() + o.slice(1))
+    .join(" / ");
+  const conf =
+    typeof rolledConfidence === "number" && !Number.isNaN(rolledConfidence)
+      ? rolledConfidence.toFixed(3)
+      : "n/a";
+  if (decisionContent.tier2) {
+    const recommendation = decisionContent.tier2.recommendedOption.toUpperCase();
+    return `**Tier 2 (${optionsLabel}):** activated at confidence ${conf} ≥ ${gate.toFixed(2)}. Recommendation: ${recommendation}.`;
+  }
+  return `**Tier 2 (${optionsLabel}):** not activated — Tier 1 confidence ${conf} < ${gate.toFixed(2)} gate.`;
 }
 
 function formatConfidence(value: number | null): string {

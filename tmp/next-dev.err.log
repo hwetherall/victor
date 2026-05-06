@@ -1,0 +1,1477 @@
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\hweth\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\hweth\OneDrive\Desktop\Innovera\Rapid Prototyping\viktor\package-lock.json
+
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] Uncaught Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] Uncaught Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] Uncaught Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] Uncaught Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  [90m23 |[0m [36mimport[0m [36mtype[0m { [33mRunStatus[0m } [36mfrom[0m [32m"@/lib/schema"[0m;
+  [90m24 |[0m [36mimport[0m { [33mTreeCanvas[0m } [36mfrom[0m [32m"./TreeCanvas"[0m;
+[31m[1m>[0m [90m25 |[0m [36mimport[0m { [33mKanbanBoard[0m } [36mfrom[0m [32m"./KanbanBoard"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m26 |[0m [36mimport[0m { [33mHypothesisDrilldown[0m } [36mfrom[0m [32m"./HypothesisDrilldown"[0m;
+  [90m27 |[0m [36mimport[0m { [33mEvidenceList[0m } [36mfrom[0m [32m"./EvidenceList"[0m;
+  [90m28 |[0m [36mimport[0m { [33mEvidenceModal[0m } [36mfrom[0m [32m"./EvidenceModal"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] Uncaught Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] Uncaught Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx:25:1
+Module not found: Can't resolve './KanbanBoard'
+  23 | import type { RunStatus } from "@/lib/schema";
+  24 | import { TreeCanvas } from "./TreeCanvas";
+> 25 | import { KanbanBoard } from "./KanbanBoard";
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  26 | import { HypothesisDrilldown } from "./HypothesisDrilldown";
+  27 | import { EvidenceList } from "./EvidenceList";
+  28 | import { EvidenceModal } from "./EvidenceModal";
+
+Import trace:
+  Server Component:
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/components/CaseView.tsx
+    ./OneDrive/Desktop/Innovera/Rapid Prototyping/viktor/app/case/[id]/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found 
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002
+[browser] [React Flow]: It looks like you've created a new nodeTypes or edgeTypes object. If this wasn't on purpose please define the nodeTypes/edgeTypes outside of the component or memoize them. Help: https://reactflow.dev/error#002

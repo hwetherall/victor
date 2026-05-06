@@ -79,6 +79,13 @@ export type FinalDecisionState =
   | "do-not-pursue"
   | "insufficient-evidence";
 
+export type Tier2Option = "build" | "buy" | "partner";
+
+export interface Tier2Snapshot {
+  recommendedOption: Tier2Option;
+  rationale: string;
+}
+
 export interface DecisionContent {
   /** Free-form headline (e.g. "Pursue rack PDU via acquisition"). */
   finalDecision: string;
@@ -97,6 +104,8 @@ export interface DecisionContent {
   thresholdsMet: Record<string, boolean>;
   /** Alternatives the decision agent seriously weighed, retained for Micky. */
   consideredAlternatives?: ConsideredAlternative[];
+  /** Tier 2 result snapshot, present only when the gate fired. */
+  tier2?: Tier2Snapshot;
 }
 
 export type HypothesisTestType = 'threshold' | 'comparison' | 'scenario' | 'binary';

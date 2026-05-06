@@ -1,5 +1,5 @@
-id: ge-9-box-with-make-buy-ally
-name: GE Market Attractiveness × Make-Buy-Ally
+id: market-entry-tiered
+name: "Market Entry: Attractiveness → Winnability → Mode"
 applicableTo: [market-entry-with-mode]
 consideredAlternatives:
   - type: framework

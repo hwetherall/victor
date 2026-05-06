@@ -17,6 +17,7 @@ import { modelMeta } from "@/lib/model-labels";
 import { ConfidenceMeter } from "./ConfidenceMeter";
 import { VerdictPanel } from "./VerdictPanel";
 import { TestDefinition } from "./TestDefinition";
+import { FinancialModelPanel } from "./FinancialModelPanel";
 
 interface EvidenceListProps {
   runId: string;
@@ -58,6 +59,13 @@ export function EvidenceList({
   // Suppress the noisy "we ignored the parent prop" lint by using it.
   void parentHypothesisId;
 
+  // The Financial Model panel is a demo prop scoped to the IRR & payback leaf.
+  // Prefer the templateId match (clean, future-proof) and fall back to a label
+  // regex so legacy cached runs without templateId still surface the panel.
+  const isIrrDrilldown =
+    parentContent.templateId === "investment-vs-ramp" ||
+    /irr|payback/i.test(parent.label);
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-3">
@@ -97,6 +105,8 @@ export function EvidenceList({
       )}
 
       <TestDefinition content={parentContent} />
+
+      {isIrrDrilldown && <FinancialModelPanel />}
 
       <h3 className="text-xs font-medium uppercase tracking-wider text-neutral-500">
         Evidence ({items.length})

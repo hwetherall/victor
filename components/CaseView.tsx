@@ -27,9 +27,21 @@ import { HypothesisDrilldown } from "./HypothesisDrilldown";
 import { EvidenceList } from "./EvidenceList";
 import { EvidenceModal } from "./EvidenceModal";
 
+export interface FrameworkSummary {
+  id: string;
+  name: string;
+  tiers: { id: string; name: string }[];
+  tier2ActivatesIf: string | null;
+  /** Flat map from a slot's `templateId` to its short partner-facing label
+   *  (e.g. `market-attractive` → "Market size"). Used as a render-time fallback
+   *  when a tree node's own `content.displayLabel` is empty (legacy runs). */
+  displayLabelByTemplateId: Record<string, string>;
+}
+
 interface CaseViewProps {
   caseConfigId: string;
   config: CaseConfig;
+  framework: FrameworkSummary;
 }
 
 type View =
@@ -43,7 +55,7 @@ type View =
 
 const POLL_INTERVAL_MS = 3000;
 
-export function CaseView({ caseConfigId, config }: CaseViewProps) {
+export function CaseView({ caseConfigId, config, framework }: CaseViewProps) {
   const queryClient = useQueryClient();
 
   const latest = useQuery({
@@ -99,6 +111,7 @@ export function CaseView({ caseConfigId, config }: CaseViewProps) {
     <div className="flex flex-col gap-8">
       <Header
         config={config}
+        framework={framework}
         status={status}
         hasCachedRun={Boolean(latest.data)}
         isStarting={startMutation.isPending}
@@ -114,7 +127,7 @@ export function CaseView({ caseConfigId, config }: CaseViewProps) {
         runError={runDetail.data?.run.error ?? null}
       />
 
-      {!activeRunId && !latest.isLoading && (
+      {!activeRunId && !latest.isLoading && !latest.data && (
         <TreeCanvas />
       )}
 
@@ -125,6 +138,8 @@ export function CaseView({ caseConfigId, config }: CaseViewProps) {
       {showResults && activeRunId && (
         <ResultsArea
           caseConfigId={caseConfigId}
+          caseQuestion={config.question}
+          displayLabelByTemplateId={framework.displayLabelByTemplateId}
           runId={activeRunId}
           view={view}
           setView={setView}
@@ -140,6 +155,7 @@ export function CaseView({ caseConfigId, config }: CaseViewProps) {
 
 interface HeaderProps {
   config: CaseConfig;
+  framework: FrameworkSummary;
   status: RunStatus | null;
   hasCachedRun: boolean;
   isStarting: boolean;
@@ -151,6 +167,7 @@ interface HeaderProps {
 
 function Header({
   config,
+  framework,
   status,
   hasCachedRun,
   isStarting,
@@ -196,7 +213,25 @@ function Header({
           <h2 className="mb-2 text-[10px] font-medium uppercase tracking-widest text-neutral-500">
             Framework
           </h2>
-          <p className="text-sm text-neutral-300">{config.frameworkId}</p>
+          <p className="text-sm text-neutral-200">{framework.name}</p>
+          <p className="mt-0.5 font-mono text-[11px] text-neutral-500">
+            {framework.id}
+          </p>
+          <ul className="mt-2 space-y-0.5 text-xs text-neutral-400">
+            {framework.tiers.map((tier, idx) => {
+              const isTier2 = idx === 1;
+              const gateSuffix =
+                isTier2 && framework.tier2ActivatesIf
+                  ? ` (gates at ${framework.tier2ActivatesIf})`
+                  : "";
+              return (
+                <li key={tier.id}>
+                  Tier {idx + 1}: {tier.name}
+                  {gateSuffix}
+                </li>
+              );
+            })}
+          </ul>
         </div>
         <div>
           <h2 className="mb-2 text-[10px] font-medium uppercase tracking-widest text-neutral-500">
@@ -250,6 +285,8 @@ function RunProgress({ status }: { status: RunStatus | null }) {
 
 interface ResultsAreaProps {
   caseConfigId: string;
+  caseQuestion: string;
+  displayLabelByTemplateId: Record<string, string>;
   runId: string;
   view: View;
   setView: (v: View) => void;
@@ -259,6 +296,8 @@ interface ResultsAreaProps {
 
 function ResultsArea({
   caseConfigId,
+  caseQuestion,
+  displayLabelByTemplateId,
   runId,
   view,
   setView,
@@ -270,9 +309,18 @@ function ResultsArea({
       {view.kind === "kanban" && (
         <KanbanBoard
           caseConfigId={caseConfigId}
+          caseQuestion={caseQuestion}
+          displayLabelByTemplateId={displayLabelByTemplateId}
           runId={runId}
           onSelectHypothesis={(hypothesisId) =>
             setView({ kind: "hypothesis", hypothesisId })
+          }
+          onSelectSubHypothesis={(subId, parentHypothesisId) =>
+            setView({
+              kind: "subhypothesis",
+              subId,
+              parentHypothesisId,
+            })
           }
         />
       )}

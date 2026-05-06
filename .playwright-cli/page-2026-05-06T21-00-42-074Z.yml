@@ -1,0 +1,100 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - link "← all cases" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - heading "ABB Rack PDU Market Entry" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Should ABB pursue the rack PDU business, and if yes, should it be built internally, acquired, or partnered into?
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - button "View results" [ref=e45] [cursor=pointer]
+          - generic [ref=e46]: "status: complete"
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - heading "Framework" [level=2] [ref=e13]
+            - paragraph [ref=e14]: "Market Entry: Attractiveness → Winnability → Mode"
+            - paragraph [ref=e15]: market-entry-tiered
+            - list [ref=e16]:
+              - listitem [ref=e17]: "Tier 1: Should we pursue?"
+              - listitem [ref=e18]: "Tier 2: Build, buy, or partner? (gates at tier-1.confidence > 0.6)"
+          - generic [ref=e19]:
+            - heading "Thresholds" [level=2] [ref=e20]
+            - list [ref=e21]:
+              - listitem [ref=e22]:
+                - generic [ref=e23]: minRevenue
+                - generic [ref=e24]: "100000000"
+              - listitem [ref=e25]:
+                - generic [ref=e26]: timeYears
+                - generic [ref=e27]: "3"
+              - listitem [ref=e28]:
+                - generic [ref=e29]: irrHurdle
+                - generic [ref=e30]: "0.15"
+              - listitem [ref=e31]:
+                - generic [ref=e32]: internalDevMaxYears
+                - generic [ref=e33]: "3"
+      - generic [ref=e379]:
+        - generic [ref=e380]:
+          - button "← overview" [ref=e381] [cursor=pointer]
+          - generic [ref=e382]: ABB can access a competitive intelligent Rack PDU within 3…
+        - generic [ref=e383]:
+          - paragraph [ref=e384]: ABB can access a competitive intelligent Rack PDU within 3 years under at least one entry mode
+          - generic [ref=e387]:
+            - generic [ref=e388]: 39%
+            - generic [ref=e389]: confidence
+        - group [ref=e392]:
+          - generic "How we tested this ›" [ref=e393] [cursor=pointer]:
+            - generic [ref=e394]: How we tested this
+            - generic [ref=e395]: ›
+        - complementary [ref=e396]:
+          - generic [ref=e397]: MB
+          - generic [ref=e398]: "AI · Micky's note: Second gate. Vertiv and Eaton already ship 17kW+ three-phase switched PDUs with deep remote monitoring. No technical gap assessment exists. Build path may be non-viable; buy/partner path is unconfirmed. Methods not used: Feature checklist as proof of competitiveness. Scope choices: Build-only product assessment. Split into capability gap and brand permission. Strongest sub-hypothesis is brand permission — ABB is listed as a top-5 rack PDU supplier in Europe and holds a 26% regional share — but no approved-vendor-list confirmation at named hyperscalers or colos exists. Weakest sub-hypothesis is capability gap: Vertiv ships 17.2kW IP67 switched PDUs and Eaton ships 80kW rack cooling, with active roadmaps that may widen the gap before ABB closes it. Gap-closing action: commission a structured feature-parity teardown against Vertiv Geist and Schneider APC with explicit milestone dates."
+        - generic [ref=e400]:
+          - generic [ref=e402]:
+            - generic:
+              - img:
+                - generic:
+                  - button "Edge from b7decaf5-94fa-47f4-ad58-1f02f540e88d to 3caee280-4418-499f-bddc-776bbd6afed2" [ref=e403] [cursor=pointer]
+                  - button "Edge from b7decaf5-94fa-47f4-ad58-1f02f540e88d to 4179267e-d617-4166-95f1-c28409ab0cf8" [ref=e406] [cursor=pointer]
+              - generic:
+                - button "ABB can access a competitive intelligent Rack PDU within 3…" [ref=e409]: ABB can access a competitive intelligent Rack PDU within 3…
+                - button "Capability gap to Vertiv, Schneider Electric, Eaton is… 35% · 6 evidence" [ref=e412]: Capability gap to Vertiv, Schneider Electric, Eaton is… 35% · 6 evidence
+                - button "ABB brand has permission in electrical-room and IT-rack… 42% · 9 evidence" [ref=e415]: ABB brand has permission in electrical-room and IT-rack… 42% · 9 evidence
+          - img [ref=e418]
+          - generic [ref=e420]:
+            - button "zoom in" [ref=e421] [cursor=pointer]:
+              - img [ref=e422]
+            - button "zoom out" [ref=e424] [cursor=pointer]:
+              - img [ref=e425]
+            - button "fit view" [ref=e427] [cursor=pointer]:
+              - img [ref=e428]
+            - button "toggle interactivity" [ref=e430] [cursor=pointer]:
+              - img [ref=e431]
+        - list [ref=e434]:
+          - listitem [ref=e435]:
+            - button [ref=e436] [cursor=pointer]:
+              - generic [ref=e437]:
+                - generic [ref=e438]: Capability gap to Vertiv, Schneider Electric, Eaton is…
+                - generic [ref=e439]: 6 evidence
+              - paragraph [ref=e440]: Capability gap to Vertiv, Schneider Electric, Eaton is closeable within 24 months
+              - generic [ref=e442]:
+                - generic [ref=e443]: 35%
+                - generic [ref=e444]: confidence
+              - paragraph [ref=e447]: VerdictTwo strong contradicting findings indicate Vertiv, Schneider, and Eaton hold substantial leads in high-power density, advanced remote monitoring, and outlet-level control, with active roadmaps suggesting the gap may widen rather than close. Supporting findings are moderate and largely describe existing competitor capabilities rather than demonstrating a credible 24-month closure path for the subject entity. No technical assessment with a concrete months-to-parity estimate is present, leaving the decision test unmet.
+              - generic [ref=e448]: "To close this gap: Commission a structured feature-parity gap analysis comparing the subject entity's current and 24-month roadmap capabilities against Vertiv Geist, Schneider APC, and Eaton on remote monitoring depth, outlet-level switching, 3-phase high-density power (≥17kW), and cooling efficiency metrics, with explicit milestone dates and resource requirements."
+          - listitem [ref=e449]:
+            - button [ref=e450] [cursor=pointer]:
+              - generic [ref=e451]:
+                - generic [ref=e452]: ABB brand has permission in electrical-room and IT-rack…
+                - generic [ref=e453]: 9 evidence
+              - paragraph [ref=e454]: ABB brand has permission in electrical-room and IT-rack buyer segments
+              - generic [ref=e456]:
+                - generic [ref=e457]: 42%
+                - generic [ref=e458]: confidence
+              - paragraph [ref=e461]: VerdictThree strong supporting findings confirm ABB's market presence and recognition in data center rack PDU and electrical distribution segments, and a moderate finding adds digital credibility; however, none of the evidence directly addresses the decision test — approved vendor list status at top-5 hyperscalers or top-3 colocation providers — leaving a critical gap between general market presence and formal procurement approval. The pre-disposed-favourable source (finding 4) is de-rated and contributes only weakly. Mixed findings (1, 6) signal ABB itself is uncertain about its go-to-market positioning, further undermining confidence that the threshold test of 5 approved-vendor-list entries is met.
+              - generic [ref=e462]: "To close this gap: Obtain procurement or sourcing documentation (approved vendor lists, qualified supplier registers, or RFP award records) from at least three of the following: AWS, Microsoft Azure, Google Cloud, Meta, Oracle (hyperscalers) or Equinix, Digital Realty, NTT (colos) confirming ABB electrical infrastructure products are on their approved vendor lists."
+    - link "Ask Micky" [ref=e35] [cursor=pointer]:
+      - /url: /case/abb-rack-pdu/memo
+  - button "Open Next.js Dev Tools" [ref=e41] [cursor=pointer]:
+    - img [ref=e42]
+  - alert [ref=e378]

@@ -1,0 +1,32 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - link "← all cases" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - heading "ABB Rack PDU Market Entry" [level=1] [ref=e5]
+      - paragraph [ref=e6]: Should ABB pursue the rack PDU business, and if yes, should it be built internally, acquired, or partnered into?
+    - generic [ref=e8]:
+      - button "Run analysis" [ref=e10] [cursor=pointer]
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - heading "Framework" [level=2] [ref=e13]
+          - paragraph [ref=e14]: market-entry-tiered
+        - generic [ref=e15]:
+          - heading "Thresholds" [level=2] [ref=e16]
+          - list [ref=e17]:
+            - listitem [ref=e18]:
+              - generic [ref=e19]: minRevenue
+              - generic [ref=e20]: "100000000"
+            - listitem [ref=e21]:
+              - generic [ref=e22]: timeYears
+              - generic [ref=e23]: "3"
+            - listitem [ref=e24]:
+              - generic [ref=e25]: irrHurdle
+              - generic [ref=e26]: "0.15"
+            - listitem [ref=e27]:
+              - generic [ref=e28]: internalDevMaxYears
+              - generic [ref=e29]: "3"
+    - link "Ask Micky" [ref=e31] [cursor=pointer]:
+      - /url: /case/abb-rack-pdu/memo
+  - button "Open Next.js Dev Tools" [ref=e37] [cursor=pointer]:
+    - img [ref=e38]

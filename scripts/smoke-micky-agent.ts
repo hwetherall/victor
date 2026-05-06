@@ -41,9 +41,10 @@ async function main() {
     assert(entry.rationale.trim().length > 0);
   }
   assert(
-    !JSON.stringify(output.frameworkRationale).includes(
-      "ge-9-box-with-make-buy-ally",
-    ),
+    !JSON.stringify(output.frameworkRationale).includes("market-entry-tiered") &&
+      !JSON.stringify(output.frameworkRationale).includes(
+        "ge-9-box-with-make-buy-ally",
+      ),
     "framework rationale leaked YAML id",
   );
   assert(

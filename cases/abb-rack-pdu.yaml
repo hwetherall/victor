@@ -1,12 +1,18 @@
 caseId: abb-rack-pdu
 title: ABB Rack PDU Market Entry
 question: "Should ABB pursue the rack PDU business, and if yes, should it be built internally, acquired, or partnered into?"
-frameworkId: ge-9-box-with-make-buy-ally
+frameworkId: market-entry-tiered
 
 substitutions:
   COMPANY: ABB
   PRODUCT: rack PDU (intelligent/managed segment)
-  SCOPE: global data center market, accessible geographies excluding restricted markets
+  # Keep SCOPE short — it is interpolated inline into hypothesis claims and
+  # falsifiers (see frameworks/market-entry-tiered.yaml). Anything sentence-
+  # length here dominates the prose. The "accessible geographies / ex-restricted
+  # markets" qualifier lives in the falsifiers (which already say "accessible
+  # geographies") and in SCOPE_LONG below for the case question / brief text.
+  SCOPE: the global data center market
+  SCOPE_LONG: global data center market, accessible geographies excluding restricted markets
   THRESHOLD_LOWER: $50M annual revenue
   THRESHOLD_UPPER: $100M annual revenue
   HORIZON: 3 years

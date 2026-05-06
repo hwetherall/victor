@@ -1,4 +1,4 @@
-# Test-driven web-search templates for GE 9-box × Make-Buy-Ally.
+# Test-driven web-search templates for the market-entry-tiered framework.
 # Loaded by lib/query-builder.ts when a sub-hypothesis's test.metric matches a
 # key below. Substitutions: [COMPANY], [PRODUCT], [SCOPE], [HORIZON],
 # [PARITY_BENCHMARKS], [THRESHOLD_LOWER], [THRESHOLD_UPPER], [IRR_HURDLE]

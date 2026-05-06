@@ -128,6 +128,14 @@ export async function decide(
     thresholds,
     thresholdsMet,
     consideredAlternatives: finalDecisionText.consideredAlternatives ?? [],
+    ...(tier2
+      ? {
+          tier2: {
+            recommendedOption: tier2.recommendedOption,
+            rationale: tier2.rationale,
+          },
+        }
+      : {}),
   };
 
   // Persist on the decision node.
@@ -215,7 +223,7 @@ function applyStatePostCheck(
 }
 
 // Map case-yaml threshold keys to the framework template ids of the leaves
-// that test them. Hard-coded for `ge-9-box-with-make-buy-ally` while there is
+// that test them. Hard-coded for `market-entry-tiered` while there is
 // only one framework; lift to framework yaml when a second one ships.
 const THRESHOLD_LEAF_TEMPLATES: Record<string, string[]> = {
   minRevenue: ["tam-sam-som", "growth-trajectory"],

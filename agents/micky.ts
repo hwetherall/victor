@@ -574,6 +574,7 @@ function containsInternalFrameworkLeak(value: string): boolean {
     "mode-conditional sub-hypotheses",
     "internal architecture",
     "uuid",
+    "market-entry-tiered",
     "ge-9-box-with-make-buy-ally",
   ].some((term) => lower.includes(term));
   const uuidLike =
