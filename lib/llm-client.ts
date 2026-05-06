@@ -27,6 +27,7 @@ export type AgentRole =
   | "evaluator"
   | "tier2"
   | "decision"
+  | "micky"
   | "vision"
   | "contrarian";
 
@@ -36,6 +37,7 @@ export const MODEL_MAP: Record<AgentRole, LLMModel> = {
   evaluator: MODELS.sonnet,
   tier2: MODELS.sonnet,
   decision: MODELS.opus,
+  micky: MODELS.sonnet,
   // Sonnet 4.6 has the most reliable PDF understanding via OpenRouter.
   vision: MODELS.sonnet,
   // Contrarian uses Sonnet but is labelled distinctly via model_used so the

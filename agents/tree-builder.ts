@@ -23,19 +23,23 @@ const EMPTY_DECISION_CONTENT: DecisionContent = {
  */
 function slotToHypothesisContent(slot: {
   claim: string;
+  displayLabel?: string;
   falsifier: string;
   test: HypothesisContent["test"];
   modeDependence: HypothesisContent["modeDependence"];
   insightAtStake: string;
   id: string;
+  consideredAlternatives?: HypothesisContent["consideredAlternatives"];
 }): HypothesisContent {
   return {
     claim: slot.claim,
+    displayLabel: slot.displayLabel,
     falsifier: slot.falsifier,
     test: slot.test,
     modeDependence: slot.modeDependence,
     insightAtStake: slot.insightAtStake,
     templateId: slot.id,
+    consideredAlternatives: slot.consideredAlternatives ?? [],
   };
 }
 

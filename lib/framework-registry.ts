@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { load as parseYaml } from "js-yaml";
-import type { HypothesisTestType, ModeDependence } from "./schema";
+import type {
+  ConsideredAlternative,
+  HypothesisTestType,
+  ModeDependence,
+} from "./schema";
 
 // ─── Framework YAML shape (mirrors frameworks/*.yaml, SPEC §7.1) ─────────────
 
@@ -14,21 +18,25 @@ export interface FrameworkSlotTest {
 
 export interface FrameworkSubSlot {
   id: string;
+  displayLabel?: string;
   claim: string;
   falsifier: string;
   test: FrameworkSlotTest;
   modeDependence: ModeDependence;
   insightAtStake: string;
+  consideredAlternatives?: ConsideredAlternative[];
 }
 
 export interface FrameworkSlot {
   id: string;
+  displayLabel?: string;
   weight: number;
   claim: string;
   falsifier: string;
   test: FrameworkSlotTest;
   modeDependence: ModeDependence;
   insightAtStake: string;
+  consideredAlternatives?: ConsideredAlternative[];
   decomposition?: FrameworkSubSlot[];
 }
 
@@ -52,6 +60,7 @@ export interface Framework {
   id: string;
   name: string;
   applicableTo: string[];
+  consideredAlternatives?: ConsideredAlternative[];
   tiers: [FrameworkTier1, FrameworkTier2];
 }
 

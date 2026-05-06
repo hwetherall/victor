@@ -4,7 +4,7 @@
 // sub-hypothesis to surface its evidence list (lifted state in CaseView).
 
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Background,
   Controls,
@@ -13,9 +13,12 @@ import {
   type Node,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { fetchNodeDetail, fetchRunNodes } from "@/lib/api-client";
+import { fetchMickyRuns, fetchNodeDetail, fetchRunNodes } from "@/lib/api-client";
 import { ConfidenceMeter } from "./ConfidenceMeter";
 import type { HypothesisContent, TreeNode } from "@/lib/schema";
+import { MickyAnnotation } from "./MickyAnnotation";
+import { GhostTree } from "./GhostTree";
+import { TestDefinition } from "./TestDefinition";
 
 interface HypothesisDrilldownProps {
   runId: string;
@@ -30,6 +33,7 @@ export function HypothesisDrilldown({
   onSelectSub,
   onBack,
 }: HypothesisDrilldownProps) {
+  const [showGhost, setShowGhost] = useState(false);
   const detail = useQuery({
     queryKey: ["node-detail", runId, hypothesisId],
     queryFn: () => fetchNodeDetail(runId, hypothesisId),
@@ -39,6 +43,10 @@ export function HypothesisDrilldown({
   const allNodes = useQuery({
     queryKey: ["run-nodes", runId],
     queryFn: () => fetchRunNodes(runId),
+  });
+  const mickyRuns = useQuery({
+    queryKey: ["micky-runs", runId],
+    queryFn: () => fetchMickyRuns(runId),
   });
 
   const evCountBySub = useMemo(() => {
@@ -69,9 +77,29 @@ export function HypothesisDrilldown({
   if (!detail.data) return null;
 
   const node = detail.data.node;
-  const claim = (node.content as HypothesisContent).claim ?? node.label;
+  const nodeContent = node.content as HypothesisContent;
+  const claim = nodeContent.claim ?? node.label;
   const subs = detail.data.children.filter(
     (c) => c.type === "sub_hypothesis",
+  );
+  const latestMickyOutput =
+    (mickyRuns.data ?? []).find((run) => run.status === "complete")?.output ??
+    null;
+  const rankEntry =
+    latestMickyOutput?.hypothesisRanking.find(
+      (entry) => mickyRankId(entry) === node.id,
+    ) ??
+    null;
+  const decompEntry =
+    latestMickyOutput?.hypothesisDecomposition.find(
+      (entry) => mickyDecompId(entry) === node.id,
+    ) ?? null;
+  const ghostTree = [node, ...detail.data.children];
+  const hasGhosts = ghostTree.some(
+    (treeNode) =>
+      (treeNode.type === "hypothesis" || treeNode.type === "sub_hypothesis") &&
+      ((treeNode.content as HypothesisContent).consideredAlternatives?.length ??
+        0) > 0,
   );
 
   return (
@@ -91,17 +119,29 @@ export function HypothesisDrilldown({
 
       <div className="rounded-lg border border-neutral-800 bg-neutral-950 p-5">
         <p className="text-base font-medium text-neutral-100">{claim}</p>
-        {(node.content as HypothesisContent).rationale && (
+        {nodeContent.rationale && (
           <p className="mt-2 text-sm text-neutral-400">
-            {(node.content as HypothesisContent).rationale}
+            {nodeContent.rationale}
           </p>
         )}
         <div className="mt-4 max-w-md">
           <ConfidenceMeter value={node.confidence} />
         </div>
       </div>
+      <TestDefinition content={nodeContent} />
+      <MickyAnnotation rankEntry={rankEntry} decompEntry={decompEntry} />
 
-      <div className="h-[420px] w-full rounded-lg border border-neutral-800 bg-neutral-950">
+      <div className="relative h-[420px] w-full rounded-lg border border-neutral-800 bg-neutral-950">
+        {hasGhosts && (
+          <button
+            type="button"
+            onClick={() => setShowGhost((value) => !value)}
+            className="absolute right-3 top-3 z-20 rounded border border-neutral-700 bg-neutral-900 px-3 py-1 text-xs text-neutral-300 hover:bg-neutral-800"
+          >
+            {showGhost ? "Hide rejected branches" : "Show rejected branches"}
+          </button>
+        )}
+        <GhostTree tree={ghostTree} visible={showGhost} />
         <ReactFlow
           nodes={flow.nodes}
           edges={flow.edges}
@@ -110,6 +150,7 @@ export function HypothesisDrilldown({
           onNodeClick={(_, n) => {
             if (n.id !== node.id) onSelectSub(n.id);
           }}
+          className="relative z-10"
         >
           <Background color="#262626" gap={16} />
           <Controls className="!bg-neutral-900 !border-neutral-700" />
@@ -138,6 +179,14 @@ export function HypothesisDrilldown({
                   {subContent.claim ?? s.label}
                 </p>
                 <ConfidenceMeter value={s.confidence} size="sm" />
+                {subContent.rationale && (
+                  <p className="line-clamp-3 text-xs leading-relaxed text-neutral-400">
+                    <span className="mr-1.5 text-[10px] font-medium uppercase tracking-wider text-neutral-500">
+                      Verdict
+                    </span>
+                    {subContent.rationale}
+                  </p>
+                )}
                 {subContent.gapClosingAction && (
                   <div className="mt-1 rounded border border-amber-700/40 bg-amber-950/30 p-2 text-[11px] leading-relaxed text-amber-200">
                     <span className="font-medium uppercase tracking-wider text-amber-400">
@@ -232,4 +281,16 @@ function borderFor(conf: number | null): string {
   if (conf >= 0.7) return "#10b981";
   if (conf >= 0.4) return "#f59e0b";
   return "#f43f5e";
+}
+
+function mickyRankId(
+  entry: import("@/lib/schema").MickyOutput["hypothesisRanking"][number],
+): string {
+  return entry.hypothesisId ?? (entry as unknown as { id?: string }).id ?? "";
+}
+
+function mickyDecompId(
+  entry: import("@/lib/schema").MickyOutput["hypothesisDecomposition"][number],
+): string {
+  return entry.hypothesisId ?? (entry as unknown as { hypId?: string }).hypId ?? "";
 }

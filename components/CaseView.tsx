@@ -124,6 +124,7 @@ export function CaseView({ caseConfigId, config }: CaseViewProps) {
 
       {showResults && activeRunId && (
         <ResultsArea
+          caseConfigId={caseConfigId}
           runId={activeRunId}
           view={view}
           setView={setView}
@@ -248,6 +249,7 @@ function RunProgress({ status }: { status: RunStatus | null }) {
 // ─── Results (kanban + drill-down + evidence + modal) ───────────────────────
 
 interface ResultsAreaProps {
+  caseConfigId: string;
   runId: string;
   view: View;
   setView: (v: View) => void;
@@ -256,6 +258,7 @@ interface ResultsAreaProps {
 }
 
 function ResultsArea({
+  caseConfigId,
   runId,
   view,
   setView,
@@ -266,6 +269,7 @@ function ResultsArea({
     <>
       {view.kind === "kanban" && (
         <KanbanBoard
+          caseConfigId={caseConfigId}
           runId={runId}
           onSelectHypothesis={(hypothesisId) =>
             setView({ kind: "hypothesis", hypothesisId })

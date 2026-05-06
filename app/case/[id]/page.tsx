@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { loadCase } from "@/lib/framework-registry";
 import { CaseView } from "@/components/CaseView";
 
@@ -29,6 +30,15 @@ export default async function CasePage({
       </header>
 
       <CaseView caseConfigId={id} config={config} />
+
+      <div>
+        <Link
+          href={`/case/${id}/memo`}
+          className="inline-flex rounded-full border border-neutral-700 px-3 py-1.5 text-xs font-medium text-neutral-300 hover:border-neutral-500 hover:text-neutral-100"
+        >
+          Ask Micky
+        </Link>
+      </div>
     </main>
   );
 }

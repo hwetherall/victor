@@ -10,26 +10,30 @@ import {
   type FrameworkSlot,
   type FrameworkSubSlot,
 } from "@/lib/framework-registry";
-import type { HypothesisContent } from "@/lib/schema";
+import type { ConsideredAlternative, HypothesisContent } from "@/lib/schema";
 
 export interface BoundSlot {
   id: string;
+  displayLabel?: string;
   claim: string;
   falsifier: string;
   test: HypothesisContent["test"];
   modeDependence: HypothesisContent["modeDependence"];
   insightAtStake: string;
   weight: number;
+  consideredAlternatives?: ConsideredAlternative[];
   decomposition: BoundSubSlot[];
 }
 
 export interface BoundSubSlot {
   id: string;
+  displayLabel?: string;
   claim: string;
   falsifier: string;
   test: HypothesisContent["test"];
   modeDependence: HypothesisContent["modeDependence"];
   insightAtStake: string;
+  consideredAlternatives?: ConsideredAlternative[];
 }
 
 export interface FrameworkBinding {
@@ -50,21 +54,25 @@ function bindSlot(
   const applied = applySubstitutionsDeep<FrameworkSlot>(slot, subs);
   return {
     id: applied.id,
+    displayLabel: applied.displayLabel,
     claim: applied.claim,
     falsifier: applied.falsifier,
     test: applied.test,
     modeDependence: applied.modeDependence,
     insightAtStake: applied.insightAtStake,
     weight: applied.weight,
+    consideredAlternatives: applied.consideredAlternatives ?? [],
     decomposition: (applied.decomposition ?? []).map((sub) => {
       const appliedSub = applySubstitutionsDeep<FrameworkSubSlot>(sub, subs);
       return {
         id: appliedSub.id,
+        displayLabel: appliedSub.displayLabel,
         claim: appliedSub.claim,
         falsifier: appliedSub.falsifier,
         test: appliedSub.test,
         modeDependence: appliedSub.modeDependence,
         insightAtStake: appliedSub.insightAtStake,
+        consideredAlternatives: appliedSub.consideredAlternatives ?? [],
       };
     }),
   };

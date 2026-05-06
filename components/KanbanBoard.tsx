@@ -4,7 +4,8 @@
 // hypothesis gets a rose border so it pops on the demo screen.
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchRunNodes } from "@/lib/api-client";
+import Link from "next/link";
+import { fetchMickyRuns, fetchRunNodes } from "@/lib/api-client";
 import { aggregateModels } from "@/lib/model-labels";
 import { ConfidenceMeter } from "./ConfidenceMeter";
 import type {
@@ -15,14 +16,23 @@ import type {
 } from "@/lib/schema";
 
 interface KanbanBoardProps {
+  caseConfigId: string;
   runId: string;
   onSelectHypothesis: (hypothesisId: string) => void;
 }
 
-export function KanbanBoard({ runId, onSelectHypothesis }: KanbanBoardProps) {
+export function KanbanBoard({
+  caseConfigId,
+  runId,
+  onSelectHypothesis,
+}: KanbanBoardProps) {
   const q = useQuery({
     queryKey: ["run-nodes", runId],
     queryFn: () => fetchRunNodes(runId),
+  });
+  const mickyRuns = useQuery({
+    queryKey: ["micky-runs", runId],
+    queryFn: () => fetchMickyRuns(runId),
   });
 
   if (q.isLoading) {
@@ -64,6 +74,9 @@ export function KanbanBoard({ runId, onSelectHypothesis }: KanbanBoardProps) {
   // Distinct model pills for the decision card footer — aggregated across
   // every node in the run (decision, hypotheses, evidence, vision-ingest).
   const modelsUsed = aggregateModels(q.data.nodes.map((n) => n.model_used));
+  const hasMickyRun = (mickyRuns.data ?? []).some(
+    (run) => run.status === "complete",
+  );
 
   const labelByNodeId = new Map(q.data.nodes.map((n) => [n.id, n.label]));
 
@@ -78,6 +91,8 @@ export function KanbanBoard({ runId, onSelectHypothesis }: KanbanBoardProps) {
       {decision && (
         <DecisionCard
           node={decision}
+          caseConfigId={caseConfigId}
+          hasMickyRun={hasMickyRun}
           modelsUsed={modelsUsed}
           labelByNodeId={labelByNodeId}
           gapList={gapList}
@@ -136,11 +151,15 @@ interface GapGroup {
 
 function DecisionCard({
   node,
+  caseConfigId,
+  hasMickyRun,
   modelsUsed,
   labelByNodeId,
   gapList,
 }: {
   node: DecisionNode;
+  caseConfigId: string;
+  hasMickyRun: boolean;
   modelsUsed: ModelMeta[];
   labelByNodeId: Map<string, string>;
   gapList: GapGroup[];
@@ -188,6 +207,14 @@ function DecisionCard({
         />
       )}
       {gapList.length > 0 && <GapList groups={gapList} />}
+      {hasMickyRun && (
+        <Link
+          href={`/case/${caseConfigId}/memo`}
+          className="mt-5 inline-flex text-sm font-medium text-emerald-300 hover:text-emerald-200"
+        >
+          View Micky&apos;s memo →
+        </Link>
+      )}
       {modelsUsed.length > 1 && (
         <div className="mt-5 border-t border-neutral-800/80 pt-3">
           <span className="text-[10px] uppercase tracking-widest text-neutral-500">
@@ -400,7 +427,8 @@ function HypothesisCard({
   evidenceCount,
   onClick,
 }: HypothesisCardProps) {
-  const claim = (node.content as HypothesisContent).claim ?? node.label;
+  const content = node.content as HypothesisContent;
+  const claim = content.claim ?? node.label;
   const border = isWeakest
     ? "border-rose-500/60 hover:border-rose-400"
     : "border-neutral-800 hover:border-neutral-600";
@@ -423,6 +451,14 @@ function HypothesisCard({
       </div>
       <p className="line-clamp-3 text-sm text-neutral-200">{claim}</p>
       <ConfidenceMeter value={node.confidence} size="sm" />
+      {content.rationale && (
+        <p className="line-clamp-2 text-xs leading-relaxed text-neutral-400">
+          <span className="mr-1.5 text-[10px] font-medium uppercase tracking-wider text-neutral-500">
+            Verdict
+          </span>
+          {content.rationale}
+        </p>
+      )}
       <div className="flex items-center justify-between text-[11px] text-neutral-500">
         <span>
           {subCount} sub-hypothes{subCount === 1 ? "is" : "es"}

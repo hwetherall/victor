@@ -2,7 +2,7 @@
 // responses throw with the body's `error` field when available.
 
 import type { EvidenceItem } from "@/app/api/runs/[id]/nodes/[nodeId]/evidence/route";
-import type { Run, TreeNode } from "@/lib/schema";
+import type { MickyRun, Run, TreeNode } from "@/lib/schema";
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: "no-store" });
@@ -31,6 +31,21 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
     try {
       const b = await res.json();
       if (b?.error) message = b.error;
+    } catch {
+      /* noop */
+    }
+    throw new Error(message);
+  }
+  return res.json() as Promise<T>;
+}
+
+async function deleteJson<T>(url: string): Promise<T> {
+  const res = await fetch(url, { method: "DELETE", cache: "no-store" });
+  if (!res.ok) {
+    let message = `HTTP ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body?.error) message = body.error;
     } catch {
       /* noop */
     }
@@ -111,4 +126,29 @@ export function startRunRequest(
   caseConfigId: string,
 ): Promise<StartRunResponse> {
   return postJson<StartRunResponse>("/api/runs", { caseId: caseConfigId });
+}
+
+export async function fetchMickyRuns(runId: string): Promise<MickyRun[]> {
+  const body = await getJson<{ runs: MickyRun[] }>(`/api/runs/${runId}/micky`);
+  return body.runs;
+}
+
+export interface TriggerMickyRunResponse {
+  mickyRunId: string;
+  attemptNumber: number;
+}
+
+export function triggerMickyRun(
+  runId: string,
+): Promise<TriggerMickyRunResponse> {
+  return postJson<TriggerMickyRunResponse>(`/api/runs/${runId}/micky`, {});
+}
+
+export function deleteMickyRun(
+  runId: string,
+  attemptId: string,
+): Promise<{ ok: true }> {
+  return deleteJson<{ ok: true }>(
+    `/api/runs/${runId}/micky?attemptId=${encodeURIComponent(attemptId)}`,
+  );
 }

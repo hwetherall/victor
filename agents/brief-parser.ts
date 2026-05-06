@@ -19,5 +19,7 @@ export async function parseBrief(caseId: string): Promise<ParsedBrief> {
       author: d.author,
       stake: d.stake,
     })),
+    consideredAlternatives: [],
+    consideredFrameworks: [],
   };
 }

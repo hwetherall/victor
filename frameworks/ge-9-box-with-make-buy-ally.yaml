@@ -1,12 +1,23 @@
 id: ge-9-box-with-make-buy-ally
 name: GE Market Attractiveness × Make-Buy-Ally
 applicableTo: [market-entry-with-mode]
+consideredAlternatives:
+  - type: framework
+    name: Simple go/no-go scorecard
+    whyCut: "A single score would average strong market evidence with missing economics and hide the binding diligence gaps."
+  - type: framework
+    name: Scenario planning
+    whyCut: "Scenario work is premature until ABB-specific unit economics and channel access are actually modeled."
+  - type: framework
+    name: Pure build-buy-partner matrix
+    whyCut: "Entry mode is a second-order choice until the market, access, economics, and roadmap gates clear."
 tiers:
   - id: tier-1
     name: Should we pursue?
     type: AND-gate
     slots:
       - id: market-attractive
+        displayLabel: Market size
         weight: 0.25
         claim: "Accessible market in [SCOPE] supports [THRESHOLD_LOWER] by [HORIZON] with credible path to [THRESHOLD_UPPER]"
         falsifier: "Bottom-up share-capture analysis cannot reach [THRESHOLD_LOWER] revenue from accessible geographies within [HORIZON] under any plausible share assumption"
@@ -17,8 +28,16 @@ tiers:
           horizon: "[HORIZON]"
         modeDependence: agnostic
         insightAtStake: "If false, no entry mode rescues the case — opportunity isn't material"
+        consideredAlternatives:
+          - type: scope
+            name: China-led revenue pool
+            whyCut: "China may be large but is not reliably accessible to ABB for the target entry question, so it cannot carry the base SOM case."
+          - type: method
+            name: Top-down TAM share only
+            whyCut: "Headline TAM share would not test whether accessible geographies can produce the lower revenue threshold."
         decomposition:
           - id: tam-sam-som
+            displayLabel: TAM-to-SOM bridge
             claim: "TAM-SAM-SOM bridge plus share-capture assumptions support [THRESHOLD_LOWER] in [SCOPE]"
             falsifier: "At top-quartile new-entrant share, accessible revenue does not reach [THRESHOLD_LOWER]"
             test:
@@ -29,6 +48,7 @@ tiers:
             modeDependence: agnostic
             insightAtStake: "If false, headline market size is misleading; accessible market too small"
           - id: growth-trajectory
+            displayLabel: Market growth
             claim: "Market growth trajectory in [SCOPE] supports [THRESHOLD_UPPER] within [HORIZON]"
             falsifier: "Compound annual growth rate across target segments is below 8% or total addressable market expansion does not reach [THRESHOLD_UPPER] by [HORIZON]"
             test:
@@ -39,6 +59,7 @@ tiers:
             modeDependence: agnostic
             insightAtStake: "If false, revenue ramp is insufficient even with full share capture"
           - id: sub-segment-mix
+            displayLabel: Intelligent mix
             claim: "Intelligent vs basic segment mix in [SCOPE] favours premium pricing"
             falsifier: "Intelligent PDU segment share is below 30% of total PDU market or average selling price premium is less than 20%"
             test:
@@ -48,6 +69,7 @@ tiers:
             modeDependence: agnostic
             insightAtStake: "If false, margin assumptions based on intelligent segment premium are invalid"
       - id: can-win
+        displayLabel: Product competitiveness
         weight: 0.20
         claim: "[COMPANY] can access a competitive intelligent Rack PDU within [HORIZON] under at least one entry mode"
         falsifier: "Price-performance parity vs [PARITY_BENCHMARKS] cannot be achieved within [HORIZON] under any entry mode"
@@ -58,8 +80,16 @@ tiers:
           horizon: "[HORIZON]"
         modeDependence: agnostic
         insightAtStake: "If false, ABB cannot compete on product capability regardless of go-to-market path"
+        consideredAlternatives:
+          - type: method
+            name: Feature checklist as proof of competitiveness
+            whyCut: "A feature list can show parity on paper but not whether ABB can close firmware, monitoring, and cost gaps on time."
+          - type: scope
+            name: Build-only product assessment
+            whyCut: "The decision explicitly includes buy and partner paths, which may inherit a competitive stack rather than build one."
         decomposition:
           - id: capability-gap
+            displayLabel: Capability gap
             claim: "Capability gap to [PARITY_BENCHMARKS] is closeable within 24 months"
             falsifier: "Technical assessment shows >24 months required to match feature parity with [PARITY_BENCHMARKS] on remote monitoring, outlet-level control, or efficiency metrics"
             test:
@@ -71,6 +101,7 @@ tiers:
             modeDependence: build-only
             insightAtStake: "If false, build path is non-viable; buy/partner becomes mandatory"
           - id: brand-permission
+            displayLabel: Brand permission
             claim: "ABB brand has permission in electrical-room and IT-rack buyer segments"
             falsifier: "ABB is not on approved vendor list at any of top-5 hyperscalers or top-3 colocation providers for electrical infrastructure"
             test:
@@ -83,6 +114,7 @@ tiers:
             modeDependence: build-or-partner
             insightAtStake: "If false, IT-channel entry requires acquisition of established brand"
       - id: can-reach
+        displayLabel: Channel access
         weight: 0.15
         claim: "[COMPANY] can reach IT-channel customers fast enough to capture [THRESHOLD_LOWER]"
         falsifier: "Time to establish IT-channel relationships exceeds 18 months or channel coverage is below 60% of target accounts within [HORIZON]"
@@ -93,8 +125,16 @@ tiers:
           horizon: "18 months"
         modeDependence: agnostic
         insightAtStake: "If false, direct sales cannot achieve revenue ramp; partnership or acquisition required"
+        consideredAlternatives:
+          - type: hypothesis
+            name: Electrical channel can carry IT rack-PDU sales
+            whyCut: "It was folded into the reach test because facility-buyer relationships do not prove access to IT procurement or hyperscaler AVL processes."
+          - type: method
+            name: Distributor-count proxy
+            whyCut: "Counting electrical distributors would not establish coverage of named data-center decision makers."
         decomposition:
           - id: electrical-channels-insufficient
+            displayLabel: Existing channel reach
             claim: "Existing ABB electrical channels cannot reach IT decision-makers for rack PDU"
             falsifier: "ABB electrical sales force has existing relationships with IT buyers at 50%+ of target accounts"
             test:
@@ -105,6 +145,7 @@ tiers:
             modeDependence: agnostic
             insightAtStake: "If false, electrical channel can support entry; no additional go-to-market needed"
           - id: acquisition-opens-channels
+            displayLabel: AVL via buy/partner
             claim: "Acquisition or partnership secures approved vendor status at top hyperscalers and colos"
             falsifier: "No acquisition target or partner in [SCOPE] has approved vendor status at 3+ hyperscalers"
             test:
@@ -116,6 +157,7 @@ tiers:
             modeDependence: buy-or-partner
             insightAtStake: "If false, partnership/acquisition path does not solve channel access problem"
       - id: financials-clear
+        displayLabel: Unit economics
         weight: 0.20
         claim: "Unit economics and investment clear [COMPANY]'s IRR hurdle of [IRR_HURDLE]"
         falsifier: "Blended margin across intelligent and basic SKUs is below 20% or payback period exceeds 3 years at target volumes"
@@ -126,8 +168,16 @@ tiers:
           horizon: "steady state"
         modeDependence: agnostic
         insightAtStake: "If false, ROI does not justify capital allocation regardless of strategic fit"
+        consideredAlternatives:
+          - type: method
+            name: Payback-only screen
+            whyCut: "Payback misses mode-specific capex, acquisition premium, and margin timing that determine whether the hurdle rate clears."
+          - type: method
+            name: Incumbent gross-margin proxy
+            whyCut: "Competitor margin ranges cannot substitute for ABB-specific BOM, channel leakage, and ramp costs."
         decomposition:
           - id: margins-credible
+            displayLabel: Margin potential
             claim: "25-30% gross margins are achievable on intelligent PDU portfolio"
             falsifier: "Channel margin leakage or intelligent/basic mix results in blended margin below 20%"
             test:
@@ -138,6 +188,7 @@ tiers:
             modeDependence: agnostic
             insightAtStake: "If false, pricing power assumption in intelligent segment is invalid"
           - id: investment-vs-ramp
+            displayLabel: IRR and payback
             claim: "Investment required vs revenue ramp clears 15% IRR hurdle"
             falsifier: "NPV at [IRR_HURDLE] is negative or payback period exceeds [HORIZON]"
             test:
@@ -150,6 +201,7 @@ tiers:
             modeDependence: mode-conditional
             insightAtStake: "If false, capital efficiency requirement not met"
       - id: tech-resilient
+        displayLabel: Roadmap resilience
         weight: 0.20
         claim: "Product roadmap retains option value through next density-band migration and DC distribution scenarios"
         falsifier: "100-200 kW density band becomes dominant within [HORIZON] and ABB cannot adapt, or DC distribution penetrates >40% of target market"
@@ -160,8 +212,16 @@ tiers:
           horizon: "[HORIZON]"
         modeDependence: agnostic
         insightAtStake: "If false, product lifecycle too short to justify entry investment"
+        consideredAlternatives:
+          - type: method
+            name: Single HVDC adoption forecast
+            whyCut: "Available evidence does not support one confident penetration curve, so DC distribution is treated as a scenario risk."
+          - type: scope
+            name: Hyperscale-only roadmap
+            whyCut: "The accessible opportunity includes colocation and enterprise buyers whose density timelines may differ from hyperscalers."
         decomposition:
           - id: density-migration
+            displayLabel: Density migration
             claim: "100-200 kW density band migration timeline is manageable with current roadmap"
             falsifier: "100-200 kW density band exceeds 50% of target market within 24 months"
             test:
@@ -172,6 +232,7 @@ tiers:
             modeDependence: agnostic
             insightAtStake: "If false, current product roadmap obsolesces within investment payback period"
           - id: dc-distribution-unlikely
+            displayLabel: DC distribution risk
             claim: "DC distribution disruption remains below 15% of target market through [HORIZON]"
             falsifier: "DC distribution penetration in [SCOPE] exceeds 15% within [HORIZON]"
             test:

@@ -59,6 +59,18 @@ export interface ThresholdRecord {
   sourceLeafIds: string[];
 }
 
+export type ConsideredAlternativeType =
+  | "hypothesis"
+  | "method"
+  | "scope"
+  | "framework";
+
+export interface ConsideredAlternative {
+  type: ConsideredAlternativeType;
+  name: string;
+  whyCut: string;
+}
+
 /** The three discrete decision states. NO `pursue-with-conditions` —
  *  explicitly banned product decision (2026-05-06): the system must commit
  *  or admit uncertainty, not soften a recommendation. */
@@ -83,6 +95,8 @@ export interface DecisionContent {
   thresholds?: Record<string, ThresholdRecord>;
   /** @deprecated retained for backwards compat with pre-v3 runs. */
   thresholdsMet: Record<string, boolean>;
+  /** Alternatives the decision agent seriously weighed, retained for Micky. */
+  consideredAlternatives?: ConsideredAlternative[];
 }
 
 export type HypothesisTestType = 'threshold' | 'comparison' | 'scenario' | 'binary';
@@ -115,6 +129,9 @@ export type ModeDependence =
 
 export interface HypothesisContent {
   claim: string;
+  /** Short noun-phrase label for partner-facing surfaces. Full claims remain
+   *  in `claim` for evidence linkage and falsifier displays. */
+  displayLabel?: string;
   falsifier: string;
   test: HypothesisTest;
   modeDependence: ModeDependence;
@@ -125,6 +142,8 @@ export interface HypothesisContent {
    *  diligence gap. Populated by the evaluator only when confidence < 0.5.
    *  (improve.md §8.) */
   gapClosingAction?: string;
+  /** Rejected decomposition options retained for Micky's partner memo. */
+  consideredAlternatives?: ConsideredAlternative[];
 }
 
 export interface EvidenceContent {
@@ -203,6 +222,10 @@ export interface ParsedBrief {
   risks: { description: string; likelihood: string; impact: string }[];
   stakeholderQuestions: string[];
   documentProvenance: { sourceId: string; author?: string; stake?: string }[];
+  /** Brief-framing alternatives retained for Micky. */
+  consideredAlternatives?: ConsideredAlternative[];
+  /** Framework-selection alternatives retained for Micky. */
+  consideredFrameworks?: ConsideredAlternative[];
 }
 
 // ─── sources ─────────────────────────────────────────────────────────────────
@@ -262,4 +285,57 @@ export interface Run {
   started_at: string;
   completed_at: string | null;
   error: string | null;
+}
+
+// ─── micky_runs ─────────────────────────────────────────────────────────────
+
+export type MickyRunStatus = "pending" | "running" | "complete" | "failed";
+
+export interface MickyReframe {
+  headline: string;
+  reasoning: string;
+}
+
+export interface MickyOutput {
+  reframe: MickyReframe | null;
+  recommendation: {
+    oneLiner: string;
+    weakestLink: string;
+    whatWouldFlipIt: string;
+  };
+  frameworkRationale: {
+    chosen: string;
+    rejected: ConsideredAlternative[];
+  };
+  hypothesisRanking: {
+    hypothesisId: string;
+    hypothesisLabel: string;
+    rank: number;
+    rationale: string;
+  }[];
+  hypothesisDecomposition: {
+    hypothesisId: string;
+    hypothesisLabel: string;
+    rationale: string;
+    whatWasCut: ConsideredAlternative[];
+  }[];
+  judgmentCalls: {
+    area: string;
+    thinness: string;
+    whyIWentThere: string;
+  }[];
+  pushback: { challenge: string }[];
+  signOff: { date: string; monogram: "MB" };
+}
+
+export interface MickyRun {
+  id: string;
+  run_id: string;
+  attempt_number: number;
+  status: MickyRunStatus;
+  output: MickyOutput | null;
+  error: string | null;
+  created_at: string;
+  completed_at: string | null;
+  deleted_at: string | null;
 }

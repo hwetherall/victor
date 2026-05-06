@@ -15,6 +15,8 @@ import type {
 } from "@/lib/schema";
 import { modelMeta } from "@/lib/model-labels";
 import { ConfidenceMeter } from "./ConfidenceMeter";
+import { VerdictPanel } from "./VerdictPanel";
+import { TestDefinition } from "./TestDefinition";
 
 interface EvidenceListProps {
   runId: string;
@@ -49,7 +51,8 @@ export function EvidenceList({
   if (!q.data) return null;
 
   const parent = q.data.parentNode;
-  const claim = (parent.content as HypothesisContent).claim ?? parent.label;
+  const parentContent = parent.content as HypothesisContent;
+  const claim = parentContent.claim ?? parent.label;
   const items = q.data.evidence;
 
   // Suppress the noisy "we ignored the parent prop" lint by using it.
@@ -76,6 +79,24 @@ export function EvidenceList({
           <ConfidenceMeter value={parent.confidence} />
         </div>
       </div>
+
+      {parentContent.rationale && (
+        <VerdictPanel
+          rationale={parentContent.rationale}
+          confidence={parent.confidence}
+        />
+      )}
+
+      {parentContent.gapClosingAction && (
+        <div className="rounded border border-amber-700/40 bg-amber-950/30 p-3 text-xs leading-relaxed text-amber-200">
+          <span className="mr-2 font-medium uppercase tracking-wider text-amber-400">
+            To close this gap:
+          </span>
+          {parentContent.gapClosingAction}
+        </div>
+      )}
+
+      <TestDefinition content={parentContent} />
 
       <h3 className="text-xs font-medium uppercase tracking-wider text-neutral-500">
         Evidence ({items.length})

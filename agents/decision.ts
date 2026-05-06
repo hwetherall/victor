@@ -7,6 +7,7 @@ import { insforge } from "@/lib/db";
 import { completeJson, type Message } from "@/lib/llm-client";
 import { loadCase } from "@/lib/framework-registry";
 import type {
+  ConsideredAlternative,
   DecisionContent,
   EvidenceContent,
   FinalDecisionState,
@@ -126,6 +127,7 @@ export async function decide(
     weakestLinkLabel,
     thresholds,
     thresholdsMet,
+    consideredAlternatives: finalDecisionText.consideredAlternatives ?? [],
   };
 
   // Persist on the decision node.
@@ -271,6 +273,7 @@ async function callOpus(
   headline: string;
   reasoning: string;
   state: FinalDecisionState;
+  consideredAlternatives: ConsideredAlternative[];
 }> {
   const hypBlock = input.hypotheses
     .map(
@@ -323,8 +326,15 @@ async function callOpus(
         "{",
         '  "state": "pursue" | "do-not-pursue" | "insufficient-evidence",',
         '  "headline":  "<≤15 words; matches the state per rules above>",',
-        '  "reasoning": "<3–5 sentences referencing the weakest link>"',
+        '  "reasoning": "<3–5 sentences referencing the weakest link>",',
+        '  "consideredAlternatives": [',
+        '    { "type": "hypothesis" | "method" | "scope", "name": "<alternative decision framing or entry mode>", "whyCut": "<why it was seriously weighed and rejected>" }',
+        "  ]",
         "}",
+        "",
+        "The consideredAlternatives array must contain 2–4 items. Include",
+        "alternative decision framings or entry modes that were seriously",
+        "weighed but cut. Be concrete about what made each one lose.",
         "",
         "When state='insufficient-evidence', the reasoning must say what",
         "evidence would resolve the gap (the user is going to act on this).",
@@ -352,6 +362,7 @@ async function callOpus(
     headline: string;
     reasoning: string;
     state: string;
+    consideredAlternatives?: ConsideredAlternative[];
   }>("decision", messages, { temperature: 0.3 });
 
   if (typeof parsed.headline !== "string" || parsed.headline.length === 0) {
@@ -361,7 +372,29 @@ async function callOpus(
   const state = isFinalDecisionState(parsed.state)
     ? parsed.state
     : "insufficient-evidence";
-  return { headline: parsed.headline, reasoning: parsed.reasoning, state };
+  const consideredAlternatives = Array.isArray(parsed.consideredAlternatives)
+    ? parsed.consideredAlternatives.filter(isConsideredAlternative)
+    : [];
+  return {
+    headline: parsed.headline,
+    reasoning: parsed.reasoning,
+    state,
+    consideredAlternatives,
+  };
+}
+
+function isConsideredAlternative(value: unknown): value is ConsideredAlternative {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    isConsideredAlternativeType((value as { type?: unknown }).type) &&
+    typeof (value as { name?: unknown }).name === "string" &&
+    typeof (value as { whyCut?: unknown }).whyCut === "string"
+  );
+}
+
+function isConsideredAlternativeType(value: unknown): value is ConsideredAlternative["type"] {
+  return value === "hypothesis" || value === "method" || value === "scope";
 }
 
 function isFinalDecisionState(s: unknown): s is FinalDecisionState {
