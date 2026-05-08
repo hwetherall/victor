@@ -14,6 +14,15 @@
 
 ## Pass conditions
 
+> **Where the block must live (read this first).** All four conditions
+> below are evaluated against the structured block in your **final
+> `agent.message` text** — the very last message you send before the
+> session idles. Files in `/mnt/session/outputs/` are working artifacts
+> and DO NOT count for grading; only the final-message text does. If you
+> wrote the block to a file but your final message is a status report
+> ("the research task is complete..."), the rubric fails on every
+> criterion that needs to read the block.
+
 The Researcher's work is *satisfied* only when ALL four criteria below
 are met. The grader scores each independently and returns per-criterion
 feedback on revision.
