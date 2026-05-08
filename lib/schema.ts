@@ -286,11 +286,17 @@ export interface UserQuestion {
 
 // ─── runs ────────────────────────────────────────────────────────────────────
 
+/** Leaf execution runtime (STORY-003). 'v1' = legacy parallel prompt chains
+ *  (gather-web + gather-doc + question-generator). 'v2' = Managed Agents
+ *  Investigator. Per-run, set at run start from process.env.LEAF_RUNTIME. */
+export type LeafRuntime = "v1" | "v2";
+
 export interface Run {
   id: string;
   case_id: string;
   scenario_id: string | null;
   status: RunStatus;
+  leaf_runtime: LeafRuntime;
   started_at: string;
   completed_at: string | null;
   error: string | null;
@@ -347,4 +353,191 @@ export interface MickyRun {
   created_at: string;
   completed_at: string | null;
   deleted_at: string | null;
+}
+
+// ─── V2: Managed Agents (spec-v2.md §3) ─────────────────────────────────────
+//
+// Contracts for the Investigator and Researcher Managed Agent calls. Field
+// names track spec-v2.md §3.1 / §3.2 verbatim. The day-1 spike confirmed the
+// underlying SDK shapes; see docs/spike-day-1-report.md.
+
+/** OODA phase as the agent narrates it. Skills / agent text may use these
+ *  labels; STORY-009 onward may extract them from agent.message bodies. */
+export type OODAPhase = "observe" | "orient" | "decide" | "act" | "self-critique";
+
+/** A single step in the OODA trace. `phase` is intentionally a free-form
+ *  string: STORY-007 records event-level phases mechanically (e.g.
+ *  "message", "tool_use:bash", "outcome_eval:satisfied"); future stories may
+ *  extract narrative OODAPhase tags from text content. The renderer in
+ *  STORY-025 decides how to group / display. */
+export interface ReasoningStep {
+  phase: OODAPhase | string;
+  content: string;
+  timestamp: string;
+  /** Skill loaded for this step, if any (e.g. "bottoms-up-financial-model"). */
+  skill_used?: string;
+}
+
+export interface RejectedAlternative {
+  /** Method, query, or skill that was considered and not chosen. */
+  candidate: string;
+  /** Why the agent rejected it. */
+  reason: string;
+}
+
+/** Per-leaf input to the Investigator. Mirrors spec-v2.md §3.1.
+ *  Content-payload type — fields are camelCase. */
+export interface InvestigatorInput {
+  /** Trace ID propagated to session.title for cross-system correlation
+   *  (spec-v2.md STORY-002b). Confirmed live in the day-1 spike. */
+  traceId: string;
+  hypothesis: { id: string; claim: string; templateId: string };
+  /** What would prove this hypothesis false. */
+  falsifier: string;
+  threshold: { metric: string; value: number | string };
+  caseContext: {
+    /** UUID of the case row. Required by upload_artifact, ask_user. */
+    caseId: string;
+    /** UUID of the run row. Used by STORY-007/008 cost telemetry. */
+    runId: string;
+    question: string;
+    /** Source IDs already pre-ingested in pgvector that the Investigator may
+     *  retrieve from via the retrieve_documents custom tool. Empty array
+     *  means "search all sources for the case." */
+    documentIds: string[];
+    weights: Record<string, number>;
+    /** Tree-node IDs the Investigator may peek at via read_sibling_leaf.
+     *  Whitelist — read_sibling_leaf rejects ids not in this list. */
+    siblingLeafIds: string[];
+  };
+}
+
+/** Content-payload type — fields are camelCase. The one snake_case-named
+ *  field would be `managed_agent_session_id` (DB column on reasoning_traces);
+ *  here it is `managedAgentSessionId` because this struct is in-memory IO,
+ *  not a DB row. The persisted form is `ReasoningTrace.managed_agent_session_id`. */
+export interface InvestigatorOutput {
+  /** 0–1, leaf confidence after self-critique + outcomes grading. */
+  confidence: number;
+  evidenceSummary: string;
+  reasoningTrace: ReasoningStep[];
+  rejectedAlternatives: RejectedAlternative[];
+  /** Artifacts uploaded via the upload_artifact custom tool during the
+   *  session. The day-1 spike confirmed sandbox files are NOT auto-tracked
+   *  by the Files API; the agent must explicitly upload. */
+  artifacts: {
+    artifactId: string;
+    uri: string;
+    type: ArtifactType;
+    version: number;
+  }[];
+  escalations: { question: string; type: "yes_no" | "yes_no_context" | "open" }[];
+  /** Anthropic session ID for replay / Console correlation. */
+  managedAgentSessionId: string;
+  /** Cumulative session token usage. Drives session_costs (STORY-004b/007). */
+  usage: {
+    inputTokens: number;
+    outputTokens: number;
+    cacheReadInputTokens: number;
+    cacheCreationInputTokens: number;
+  };
+  /** Per-iteration outcomes grader verdicts. Empty when outcomes wasn't used. */
+  outcomesGrades: OutcomeGrade[];
+}
+
+/** Artifact types persisted to the artifacts table (spec-v2.md §8). */
+export type ArtifactType =
+  | "xlsx"
+  | "csv"
+  | "png"
+  | "md"
+  | "json"
+  | "model_lineage";
+
+/** Per-call input to the Researcher. Mirrors spec-v2.md §3.2.
+ *  Content-payload type — fields are camelCase. */
+export interface ResearcherInput {
+  traceId: string;
+  question: string;
+  stoppingCriteria?: {
+    /** Default 0.8 if omitted. */
+    confidenceTarget?: number;
+    /** Default 10 if omitted. */
+    maxSearches?: number;
+    /** Default 3 if omitted. */
+    diminishingReturnsThreshold?: number;
+  };
+  /** Optional case context to focus relevance. */
+  contextHint?: string;
+}
+
+export interface ResearcherOutput {
+  answer: string;
+  confidence: number;
+  /** LEGAL-003: must be populated. The Researcher's outcomes rubric fails if
+   *  any element is missing url + title + quote (STORY-021). */
+  citations: { url: string; title: string; quote: string }[];
+  searchPath: { query: string; resultCount: number; usefulCount: number }[];
+  stoppedBecause: "answered" | "diminishing_returns" | "cap_reached";
+  managedAgentSessionId: string;
+}
+
+// ─── V2: artifacts table (spec-v2.md §8) ────────────────────────────────────
+
+export interface Artifact {
+  id: string;
+  case_id: string;
+  evidence_node_id: string | null;
+  type: ArtifactType;
+  uri: string;
+  version: number;
+  parent_artifact_id: string | null;
+  /** Skill name, inputs used, change_reason for v1→v2 diffs (STORY-026). */
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+// ─── V2: reasoning_traces table (spec-v2.md §8) ─────────────────────────────
+
+export type AgentType = "investigator" | "researcher" | "micky";
+
+export interface OutcomeGrade {
+  /** Grader verdict: satisfied | needs_revision | max_iterations_reached |
+   *  failed | interrupted (per Anthropic Managed Agents docs). */
+  result: string;
+  explanation?: string;
+  iteration: number;
+  failedConditions?: string[];
+  revisionCount?: number;
+  skillsUsed?: string[];
+}
+
+export interface ReasoningTrace {
+  id: string;
+  node_id: string;
+  agent_type: AgentType;
+  /** Anthropic session ID for replay / Console URL. */
+  managed_agent_session_id: string | null;
+  /** trace_id from session.title for cross-system correlation (STORY-002b). */
+  trace_id: string | null;
+  steps: ReasoningStep[];
+  rejected_alternatives: RejectedAlternative[];
+  outcomes_grades: OutcomeGrade[] | null;
+  created_at: string;
+}
+
+// ─── V2: session_costs table (STORY-004b) ───────────────────────────────────
+
+export interface SessionCost {
+  session_id: string;
+  parent_session_id: string | null;
+  run_id: string;
+  node_id: string | null;
+  agent_type: AgentType;
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  cached_tokens: number;
+  cost_usd: string; // numeric(10,4) — round-trips as string from pg
+  created_at: string;
 }

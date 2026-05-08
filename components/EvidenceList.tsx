@@ -4,7 +4,7 @@
 // item to open the source modal (state lives in CaseView).
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchNodeEvidence } from "@/lib/api-client";
+import { fetchNodeEvidence, fetchNodeV2 } from "@/lib/api-client";
 import type {
   EvidenceContent,
   EvidenceSupports,
@@ -18,6 +18,9 @@ import { ConfidenceMeter } from "./ConfidenceMeter";
 import { VerdictPanel } from "./VerdictPanel";
 import { TestDefinition } from "./TestDefinition";
 import { FinancialModelPanel } from "./FinancialModelPanel";
+import { ArtifactViewer } from "./ArtifactViewer";
+import { OODATimeline } from "./OODATimeline";
+import { HitlEscalations } from "./HitlEscalations";
 
 interface EvidenceListProps {
   runId: string;
@@ -37,6 +40,13 @@ export function EvidenceList({
   const q = useQuery({
     queryKey: ["evidence", runId, subHypothesisId],
     queryFn: () => fetchNodeEvidence(runId, subHypothesisId),
+  });
+
+  // V2: artifacts + reasoning trace. Empty for V1 leaves; component renders
+  // nothing in that case so the V1 click path is unaffected.
+  const v2 = useQuery({
+    queryKey: ["node-v2", runId, subHypothesisId],
+    queryFn: () => fetchNodeV2(runId, subHypothesisId),
   });
 
   if (q.isLoading) {
@@ -107,6 +117,33 @@ export function EvidenceList({
       <TestDefinition content={parentContent} />
 
       {isIrrDrilldown && <FinancialModelPanel />}
+
+      {v2.data && v2.data.artifacts.length > 0 && (
+        <section>
+          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500">
+            Artifact ({v2.data.artifacts.length} version{v2.data.artifacts.length > 1 ? "s" : ""})
+          </h3>
+          <ArtifactViewer artifacts={v2.data.artifacts} />
+        </section>
+      )}
+
+      {v2.data?.trace && (
+        <section>
+          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500">
+            Reasoning trace
+          </h3>
+          <OODATimeline trace={v2.data.trace} />
+        </section>
+      )}
+
+      {v2.data && v2.data.escalations.length > 0 && (
+        <section>
+          <h3 className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-500">
+            Open questions ({v2.data.escalations.length})
+          </h3>
+          <HitlEscalations escalations={v2.data.escalations} />
+        </section>
+      )}
 
       <h3 className="text-xs font-medium uppercase tracking-wider text-neutral-500">
         Evidence ({items.length})

@@ -13,10 +13,26 @@ import type {
   FinalDecisionState,
   HypothesisContent,
   HypothesisNode,
+  LeafRuntime,
   ThresholdRecord,
   ThresholdStatus,
   TreeNode,
 } from "@/lib/schema";
+
+/** Small "v1" / "v2" pill rendered in the issue-tree header (STORY-003). */
+function LeafRuntimeBadge({ runtime }: { runtime: LeafRuntime }) {
+  const isV2 = runtime === "v2";
+  return (
+    <span
+      className={`rounded px-1.5 py-0.5 font-semibold uppercase tracking-wide ${
+        isV2 ? "bg-emerald-950 text-emerald-300" : "bg-neutral-800 text-neutral-400"
+      }`}
+      title={isV2 ? "Managed Agents leaf runtime" : "Legacy prompt-chain leaf runtime"}
+    >
+      {runtime}
+    </span>
+  );
+}
 
 interface KanbanBoardProps {
   caseConfigId: string;
@@ -112,8 +128,11 @@ export function KanbanBoard({
             <h2 className="text-sm font-semibold text-neutral-100">
               Issue tree
             </h2>
-            <p className="mt-1 font-mono text-xs text-neutral-500">
-              {branches.length} hypotheses / {q.data.byType.sub_hypothesis.length} sub-hypotheses
+            <p className="mt-1 flex items-center gap-2 font-mono text-xs text-neutral-500">
+              <span>
+                {branches.length} hypotheses / {q.data.byType.sub_hypothesis.length} sub-hypotheses
+              </span>
+              <LeafRuntimeBadge runtime={q.data.run.leaf_runtime} />
             </p>
           </div>
           {hasMickyRun && (

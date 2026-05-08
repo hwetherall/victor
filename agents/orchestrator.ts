@@ -5,7 +5,9 @@
 import { insforge } from "@/lib/db";
 import { ensureCaseRow } from "@/lib/case";
 import { loadCase } from "@/lib/framework-registry";
-import type { TreeNode } from "@/lib/schema";
+import type { LeafRuntime, TreeNode } from "@/lib/schema";
+import { createInvestigatorSession } from "@/lib/managed-agents-client";
+import { persistInvestigatorOutput } from "@/lib/v2-persistence";
 import { parseBrief } from "./brief-parser";
 import { bindFramework } from "./framework-binder";
 import { buildTree } from "./tree-builder";
@@ -15,6 +17,12 @@ import { decide } from "./decision";
 import { gatherWebEvidence, type CaseContext } from "./evidence/web-search";
 import { gatherDocEvidence } from "./evidence/doc-retrieval";
 import { runContrarianPass } from "./contrarian";
+
+/** Read the V1/V2 leaf-runtime flag (STORY-003). Defaults to 'v1' so any
+ *  forgotten / typo'd env value preserves the V1 demo. */
+function readLeafRuntime(): LeafRuntime {
+  return process.env.LEAF_RUNTIME === "v2" ? "v2" : "v1";
+}
 
 export interface RunResult {
   runId: string;
@@ -90,12 +98,36 @@ async function executeRun(
       frameworkId: caseConfig.frameworkId,
       substitutions: caseConfig.substitutions,
     };
-    await Promise.allSettled(
-      subs.flatMap((s) => [
-        gatherWebEvidence(s, ctx),
-        gatherDocEvidence(s, ctx),
-      ]),
-    );
+
+    const leafRuntime = readLeafRuntime();
+    if (leafRuntime === "v1") {
+      await Promise.allSettled(
+        subs.flatMap((s) => [
+          gatherWebEvidence(s, ctx),
+          gatherDocEvidence(s, ctx),
+        ]),
+      );
+    } else {
+      // STORY-003: V2 leaf runtime. Each sub-hypothesis is one Investigator
+      // session. STORY-002 ships stubs that throw "not implemented"; per
+      // acceptance criteria the orchestrator logs the error per leaf, marks
+      // the leaf failed, and continues. Real implementation lands in
+      // STORY-005-008.
+      const allLeafIds = subs.map((s) => s.id);
+      const v2Results = await Promise.allSettled(
+        subs.map((s) =>
+          dispatchV2Leaf(s, ctx, runId, allLeafIds.filter((id) => id !== s.id)),
+        ),
+      );
+      for (let i = 0; i < v2Results.length; i++) {
+        if (v2Results[i].status === "rejected") {
+          const reason = (v2Results[i] as PromiseRejectedResult).reason;
+          const message = reason instanceof Error ? reason.message : String(reason);
+          console.warn(`[v2] leaf ${subs[i].id} failed: ${message}`);
+          await markNodeFailed(subs[i].id, message);
+        }
+      }
+    }
 
     // Stage 5: evaluate every sub-hypothesis in parallel. Promise.allSettled
     // per SPEC §12 failure-mode prevention — one evaluator failure must not
@@ -167,14 +199,101 @@ async function createRunRow(
   dbCaseId: string,
   scenarioId: string | null,
 ): Promise<string> {
+  const leafRuntime = readLeafRuntime();
   const { data, error } = await insforge.database
     .from("runs")
-    .insert([{ case_id: dbCaseId, scenario_id: scenarioId, status: "pending" }])
+    .insert([
+      {
+        case_id: dbCaseId,
+        scenario_id: scenarioId,
+        status: "pending",
+        leaf_runtime: leafRuntime,
+      },
+    ])
     .select();
   if (error) throw new Error(`createRun: ${error.message}`);
   const row = (data as { id: string }[] | null)?.[0];
   if (!row) throw new Error("createRun: insert returned no row");
   return row.id;
+}
+
+// ─── V2 leaf dispatch (STORY-003) ────────────────────────────────────────────
+//
+// STORY-003 wires the call site only. createInvestigatorSession is a stub at
+// this stage; the input mapping below is intentionally minimal and placeholder
+// — real shape is fleshed out in STORY-005-008 once the Investigator agent is
+// registered and tool bindings exist.
+
+async function dispatchV2Leaf(
+  sub: TreeNode,
+  ctx: CaseContext,
+  runId: string,
+  siblingLeafIds: string[],
+): Promise<void> {
+  if (sub.type !== "sub_hypothesis" && sub.type !== "hypothesis") {
+    throw new Error(`dispatchV2Leaf: unexpected node type ${sub.type}`);
+  }
+  const content = sub.content;
+  const traceId = `${sub.case_id}:${sub.id}`;
+
+  // Stamp trace_id on the node BEFORE dispatch so scripts/trace.ts can find
+  // in-flight leaves. STORY-007/008 will write the rest of the result back;
+  // this minimal pre-write is just the correlator anchor.
+  await stampTraceId(sub.id, traceId);
+
+  const output = await createInvestigatorSession({
+    traceId,
+    hypothesis: {
+      id: sub.id,
+      claim: content.claim,
+      templateId: content.templateId ?? "",
+    },
+    falsifier: content.falsifier,
+    threshold: {
+      metric: content.test.metric,
+      value: content.test.target,
+    },
+    caseContext: {
+      caseId: sub.case_id,
+      runId,
+      question: ctx.caseQuestion,
+      // documentIds left empty by default — retrieve_documents falls back to
+      // case-wide pgvector search, which is what we want for the demo. If a
+      // future skill needs to scope to specific sources, populate this from
+      // ctx or a new param.
+      documentIds: [],
+      weights: {},
+      siblingLeafIds,
+    },
+  });
+
+  // STORY-007: persist the full output. Cost telemetry, reasoning trace,
+  // tree_nodes confidence/status all written here. Failures are logged but
+  // don't propagate — the Investigator did its work and the run continues.
+  await persistInvestigatorOutput(output, {
+    runId,
+    nodeId: sub.id,
+    traceId,
+  });
+  console.log(
+    `[v2] leaf ${sub.id} → session=${output.managedAgentSessionId} ` +
+      `confidence=${output.confidence} artifacts=${output.artifacts.length} ` +
+      `escalations=${output.escalations.length} ` +
+      `tokens=in:${output.usage.inputTokens}+cache:${output.usage.cacheReadInputTokens} ` +
+      `out:${output.usage.outputTokens}`,
+  );
+}
+
+async function stampTraceId(nodeId: string, traceId: string): Promise<void> {
+  const { error } = await insforge.database
+    .from("tree_nodes")
+    .update({ trace_id: traceId })
+    .eq("id", nodeId);
+  if (error) {
+    // Non-fatal — the dispatch can proceed without the correlator anchor;
+    // we just lose scripts/trace.ts visibility for this leaf.
+    console.warn(`stampTraceId(${nodeId}): ${error.message}`);
+  }
 }
 
 async function updateRunStatus(
