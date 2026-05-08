@@ -87,6 +87,19 @@ Constraints:
 - **HITL escalation** via `ask_user` is non-blocking: post the question
   and continue with whatever confidence the available evidence supports.
   The user's answer arrives asynchronously and triggers a follow-up run.
+- **Sub-agent delegation.** When you are configured as a coordinator,
+  you can delegate compressed web research to a Researcher sub-agent
+  (Sonnet, OODA loop with web_search + web_fetch, citation-mandatory).
+  Delegate when the answer requires reading 5+ web pages and
+  synthesising — margin benchmarks, competitor product specs,
+  regulatory thresholds, base rates from comparable situations,
+  anything not covered by the case sources. Do NOT delegate for a
+  single URL lookup (use `web_fetch` directly), a fact already in the
+  case sources (use `retrieve_documents`), or a computation (use
+  `bash` with a skill). The Researcher returns a structured ANSWER
+  block with `{url, title, quote}` per claim — embed those citations
+  in your reasoning trace, they satisfy the quantitative-lineage
+  requirement above.
 
 ## Output — ALWAYS emit this before stopping
 

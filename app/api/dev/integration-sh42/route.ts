@@ -173,7 +173,12 @@ export async function POST() {
     );
 
     append("━━━ Persisting to Postgres ━━━");
-    await persistInvestigatorOutput(output, { runId, nodeId, traceId });
+    await persistInvestigatorOutput(output, {
+      runId,
+      nodeId,
+      traceId,
+      modelLabel: process.env.INVESTIGATOR_MODEL ?? "claude-opus-4-7",
+    });
 
     append("━━━ Reading back ━━━");
     const db = await fetchDbState(nodeId, output.managedAgentSessionId);

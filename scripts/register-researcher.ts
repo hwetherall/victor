@@ -21,7 +21,9 @@ const AGENT_NAME = "agent-victor-researcher";
 // Sonnet per spec-v2.md §3.2: faster + cheaper than Opus, parallel-friendly,
 // right for compressed research that reads many pages and hands back a few
 // paragraphs.
-const AGENT_MODEL = "claude-sonnet-4-6";
+//
+// Override via RESEARCHER_MODEL for cheaper testing (e.g. claude-haiku-4-5).
+const AGENT_MODEL = process.env.RESEARCHER_MODEL ?? "claude-sonnet-4-6";
 
 /** Read the canonical system prompt out of AGENT.md so this script and the
  *  human-readable doc never drift. Same extraction pattern as

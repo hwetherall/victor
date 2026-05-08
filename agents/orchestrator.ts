@@ -270,10 +270,13 @@ async function dispatchV2Leaf(
   // STORY-007: persist the full output. Cost telemetry, reasoning trace,
   // tree_nodes confidence/status all written here. Failures are logged but
   // don't propagate — the Investigator did its work and the run continues.
+  // The model label drives cost-telemetry pricing in v2-persistence; INVESTIGATOR_MODEL
+  // mirrors what register-investigator.ts read at registration time.
   await persistInvestigatorOutput(output, {
     runId,
     nodeId: sub.id,
     traceId,
+    modelLabel: process.env.INVESTIGATOR_MODEL ?? "claude-opus-4-7",
   });
   console.log(
     `[v2] leaf ${sub.id} → session=${output.managedAgentSessionId} ` +

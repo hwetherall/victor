@@ -14,7 +14,13 @@ import * as path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 
 const AGENT_NAME = "agent-victor-investigator";
-const AGENT_MODEL = "claude-opus-4-7";
+// Default Opus per spec. Override via INVESTIGATOR_MODEL for cheap-and-fast
+// testing — e.g. INVESTIGATOR_MODEL=claude-haiku-4-5 when you only care that
+// the plumbing (multi-agent, custom tools, outcomes) wires up, not the
+// quality of the analysis. Cost telemetry in lib/v2-persistence.ts still
+// applies Opus pricing — numbers will be off when downgraded; fine for
+// integration smoke runs, not for budget decisions.
+const AGENT_MODEL = process.env.INVESTIGATOR_MODEL ?? "claude-opus-4-7";
 
 /** Read the canonical system prompt out of AGENT.md so this script and the
  *  human-readable doc never drift. Extracts the "## System prompt" section

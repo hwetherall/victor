@@ -312,20 +312,24 @@ async function consumeStreamEvents(
           break;
         }
         case "session.thread_status_idle": {
+          // Informational only. The earlier hypothesis — that we should
+          // promote thread_status_idle's stop_reason to a dispatch point —
+          // turned out to be wrong: with a multi-agent-registered session,
+          // thread_status_idle ALSO fires for the primary thread alongside
+          // session.status_idle, and dispatching off the thread event leads
+          // to "no non-archived thread is waiting on tool_use_id" 400s
+          // (the request races the canonical session-level dispatch).
+          // session.status_idle is the canonical break point; sub-agent
+          // requires_action event_ids cross-post there too per the
+          // multi-agent docs ("the event is cross-posted to the primary
+          // thread with session_thread_id identifying the originating
+          // session thread"). Keep this case purely as a trace breadcrumb.
           const subStop = (ev.stop_reason as StopReason | null | undefined) ?? null;
-          if (subStop && subStop.type === "requires_action") {
-            // Sub-agent needs a tool confirmation / custom_tool_result. Hand
-            // off to the outer dispatch loop just like a session-level idle.
-            stopReason = subStop;
-          } else {
-            // Informational — sub-agent finished its current turn; coordinator
-            // may continue, or session-level idle will arrive next.
-            collectors.reasoningTrace.push({
-              phase: `thread_idle:${typeof ev.agent_name === "string" ? ev.agent_name : "sub"}`,
-              content: subStop ? `stop_reason=${subStop.type}` : "",
-              timestamp: eventTs,
-            });
-          }
+          collectors.reasoningTrace.push({
+            phase: `thread_idle:${typeof ev.agent_name === "string" ? ev.agent_name : "sub"}`,
+            content: subStop ? `stop_reason=${subStop.type}` : "",
+            timestamp: eventTs,
+          });
           break;
         }
         case "agent.thread_message_sent": {
@@ -359,15 +363,8 @@ async function consumeStreamEvents(
         }
       }
       if (ev.type === "session.status_idle") break;
-      // Sub-thread idle that needs a tool reply — break and let the outer
-      // dispatch loop respond. (Informational thread idles fall through and
-      // the for-await continues to the next event.)
-      if (
-        ev.type === "session.thread_status_idle" &&
-        stopReason?.type === "requires_action"
-      ) {
-        break;
-      }
+      // Note: session.thread_status_idle is intentionally NOT a break point.
+      // See the case handler above for rationale.
     }
   } catch (streamErr) {
     const msg = streamErr instanceof Error ? streamErr.message : String(streamErr);
@@ -758,7 +755,7 @@ function deriveConfidenceFromGrades(
   return Math.round(base * 100) / 100;
 }
 
-function parseConfidence(text: string): number {
+export function parseConfidence(text: string): number {
   const m = text.match(/CONFIDENCE:\s*([0-9.]+)/i);
   if (!m) return 0;
   const n = Number(m[1]);
@@ -766,24 +763,258 @@ function parseConfidence(text: string): number {
   return Math.max(0, Math.min(1, n));
 }
 
-function extractField(text: string, name: string): string | null {
+export function extractField(text: string, name: string): string | null {
   const re = new RegExp(`${name}:\\s*([\\s\\S]*?)(?=\\n[A-Z_]+:|$)`, "i");
   const m = text.match(re);
   return m ? m[1].trim() : null;
 }
 
-// ─── createResearcherSession (stub — STORY-017) ──────────────────────────────
+// ─── createResearcherSession (STORY-017) ─────────────────────────────────────
+//
+// Standalone Researcher entry point. Used by direct callers (test scripts,
+// future Tree Builder + Brief Parser + Micky fact-checking) — NOT by the
+// Investigator's mid-investigation delegation. That path runs entirely inside
+// the Investigator's session via the multiagent.agents roster (the Managed
+// Agents harness routes the spawn transparently); see consumeStreamEvents
+// above for how the primary thread surfaces the sub-thread activity.
+//
+// The loop here mirrors createInvestigatorSession: open a stream, send
+// user.define_outcome, stream-and-respond until idle. The Researcher has no
+// custom tool surface — only built-in web_search / web_fetch — so the
+// handlers map is empty. Built-in tools that need user.tool_confirmation
+// (always_ask permission) still flow through dispatchToolResponses correctly.
 
 export async function createResearcherSession(
   input: ResearcherInput,
 ): Promise<ResearcherOutput> {
-  void input;
-  readAgentRegistry({ requireResearcher: true });
-  throw new Error(
-    "createResearcherSession not implemented (STORY-017 stub). " +
-      "When the Investigator delegates to the Researcher in-session, the " +
-      "Managed Agents harness handles the spawn directly via multiagent " +
-      "roster — this top-level entry is for direct callers (Tree Builder, " +
-      "Brief Parser, Micky fact-checking).",
+  const { researcherAgentId, environmentId } = readAgentRegistry({
+    requireResearcher: true,
+  });
+  if (!researcherAgentId) {
+    // readAgentRegistry would have thrown above, but TS narrowing can't see
+    // it; defensive guard keeps the type system happy.
+    throw new Error("RESEARCHER_AGENT_ID is required");
+  }
+  const client = anthropicClient();
+
+  const stoppingDefaults = {
+    confidenceTarget: 0.8,
+    maxSearches: 10,
+    diminishingReturnsThreshold: 3,
+  };
+  const resolved = {
+    confidenceTarget:
+      input.stoppingCriteria?.confidenceTarget ?? stoppingDefaults.confidenceTarget,
+    maxSearches:
+      input.stoppingCriteria?.maxSearches ?? stoppingDefaults.maxSearches,
+    diminishingReturnsThreshold:
+      input.stoppingCriteria?.diminishingReturnsThreshold ??
+      stoppingDefaults.diminishingReturnsThreshold,
+  };
+
+  const session = await client.beta.sessions.create({
+    agent: researcherAgentId,
+    environment_id: environmentId,
+    title: input.traceId,
+  });
+
+  const rubric = buildResearcherRubric(input, resolved);
+  const description =
+    `Research question: "${input.question}". ` +
+    (input.contextHint ? `Context: ${input.contextHint}. ` : "") +
+    `Stopping criteria — confidence target ${resolved.confidenceTarget}, ` +
+    `max searches ${resolved.maxSearches}, ` +
+    `diminishing returns after ${resolved.diminishingReturnsThreshold} ` +
+    `consecutive empty searches. ` +
+    `Return a compressed structured ANSWER block with citations.`;
+
+  let stream: AsyncIterable<unknown> = await client.beta.sessions.events.stream(
+    session.id,
   );
+  await client.beta.sessions.events.send(session.id, {
+    events: [
+      {
+        type: "user.define_outcome",
+        description,
+        rubric: { type: "text", content: rubric },
+        // Researcher loops are tight — 3 iterations is plenty.
+        max_iterations: 3,
+      },
+    ],
+  });
+
+  let lastAgentText = "";
+  const collectors: StreamCollectors = {
+    pendingToolUses: [],
+    reasoningTrace: [],
+    outcomesGrades: [],
+  };
+  const side: DispatchSideEffects = {
+    artifacts: [],
+    escalations: [],
+    reasoningTrace: collectors.reasoningTrace,
+  };
+  // No custom tool handlers — built-in toolset only.
+  const handlers: Record<
+    string,
+    (input: unknown) => Promise<{ text: string; is_error?: boolean }>
+  > = {};
+
+  let cycles = 0;
+  // Researcher should not spin — its loop count is bounded by the agent's
+  // own stopping rubric. 8 cycles is a generous safety net.
+  const MAX_CYCLES = 8;
+
+  while (cycles < MAX_CYCLES) {
+    cycles++;
+    const consume = await consumeStreamEvents(stream, collectors, lastAgentText);
+    lastAgentText = consume.lastAgentText;
+    if (consume.terminated) break;
+    if (!consume.stopReason || consume.stopReason.type !== "requires_action") break;
+
+    const eventIds = consume.stopReason.event_ids ?? [];
+    const respondedCount = await dispatchToolResponses(
+      client,
+      session.id,
+      eventIds,
+      collectors.pendingToolUses,
+      handlers,
+      side,
+    );
+    if (respondedCount === 0) break;
+
+    try {
+      stream = await client.beta.sessions.events.stream(session.id);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn(`[v2] researcher re-stream failed (treating as session end): ${msg}`);
+      break;
+    }
+  }
+
+  const answer =
+    extractField(lastAgentText, "ANSWER") ??
+    lastAgentText.slice(0, 800);
+  const confidence = parseConfidence(lastAgentText);
+  const citations = parseCitations(lastAgentText);
+  const searchPath = parseSearchPath(lastAgentText);
+  const stoppedBecause = parseStoppedBecause(lastAgentText);
+
+  return {
+    answer,
+    confidence,
+    citations,
+    searchPath,
+    stoppedBecause,
+    managedAgentSessionId: session.id,
+    outcomesGrades: collectors.outcomesGrades,
+    lastAgentText,
+  };
+}
+
+// ─── Researcher output parsers ──────────────────────────────────────────────
+//
+// Exported so v2-persistence can re-use them when reading back sub-thread
+// final messages (post-session enrichment for the Investigator's spawned
+// Researchers — STORY-019-R).
+
+/** Parse the CITATIONS block from the Researcher's final ANSWER message.
+ *  Format expected by AGENT.md output schema:
+ *
+ *    CITATIONS:
+ *      [1] <title> — <url>
+ *          "<verbatim quote>"
+ *      [2] <title> — <url>
+ *          "<verbatim quote>"
+ *
+ *  Tolerates either em-dash or hyphen, smart-quotes or straight, and
+ *  quotes either inline or on the next line. */
+export function parseCitations(
+  text: string,
+): { url: string; title: string; quote: string }[] {
+  const m = text.match(/CITATIONS:\s*\n([\s\S]*?)(?=\n[A-Z_]+:|$)/i);
+  if (!m) return [];
+  const out: { url: string; title: string; quote: string }[] = [];
+  let pending: { url: string; title: string; quote: string } | null = null;
+
+  const flush = () => {
+    if (pending && pending.url && pending.title) {
+      out.push(pending);
+    }
+    pending = null;
+  };
+
+  for (const raw of m[1].split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    // Header line: "[N] title — url" or "[N] title - url"
+    const headerMatch = line.match(/^\[\d+\]\s*(.+?)\s*[—–\-]\s*(https?:\/\/\S+)/);
+    if (headerMatch) {
+      flush();
+      pending = {
+        title: headerMatch[1].trim(),
+        url: headerMatch[2].trim(),
+        quote: "",
+      };
+      continue;
+    }
+    // Quote line — start with " or ".
+    const quoteMatch = line.match(/^[""“"](.+?)[""”"]\s*$/);
+    if (quoteMatch && pending) {
+      pending.quote = quoteMatch[1].trim();
+      continue;
+    }
+  }
+  flush();
+  return out;
+}
+
+/** Parse the SEARCH_PATH block. Format:
+ *    SEARCH_PATH:
+ *      - "query" → N results, M useful
+ *      - "query" → N results, M useful
+ *
+ *  Falls back to capturing the query alone if the trailing counts are
+ *  malformed (better to record the query diversity than nothing). */
+export function parseSearchPath(
+  text: string,
+): { query: string; resultCount: number; usefulCount: number }[] {
+  const m = text.match(/SEARCH_PATH:\s*\n([\s\S]*?)(?=\n[A-Z_]+:|$)/i);
+  if (!m) return [];
+  const out: { query: string; resultCount: number; usefulCount: number }[] = [];
+  for (const raw of m[1].split("\n")) {
+    const line = raw.replace(/^\s*[-*]\s*/, "").trim();
+    if (!line) continue;
+    const full = line.match(
+      /^[""“"](.+?)[""”"]\s*[→\->]+\s*(\d+)\s*results?,?\s*(\d+)\s*useful/i,
+    );
+    if (full) {
+      out.push({
+        query: full[1].trim(),
+        resultCount: parseInt(full[2], 10),
+        usefulCount: parseInt(full[3], 10),
+      });
+      continue;
+    }
+    const queryOnly = line.match(/^[""“"](.+?)[""”"]/);
+    if (queryOnly) {
+      out.push({ query: queryOnly[1].trim(), resultCount: 0, usefulCount: 0 });
+    }
+  }
+  return out;
+}
+
+/** Parse the STOPPED_BECAUSE field. Defaults to "cap_reached" when missing
+ *  or malformed — the most conservative interpretation (caller treats it
+ *  as "the agent ran out, not a clean answer"). */
+export function parseStoppedBecause(
+  text: string,
+): "answered" | "diminishing_returns" | "cap_reached" {
+  const m = text.match(/STOPPED_BECAUSE:\s*([a-z_]+)/i);
+  if (!m) return "cap_reached";
+  const v = m[1].toLowerCase();
+  if (v === "answered" || v === "diminishing_returns" || v === "cap_reached") {
+    return v;
+  }
+  return "cap_reached";
 }

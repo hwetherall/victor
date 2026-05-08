@@ -480,6 +480,14 @@ export interface ResearcherOutput {
   searchPath: { query: string; resultCount: number; usefulCount: number }[];
   stoppedBecause: "answered" | "diminishing_returns" | "cap_reached";
   managedAgentSessionId: string;
+  /** Per-iteration grader verdicts. Empty when outcomes wasn't used. STORY-021
+   *  rubric calibration reads these to compare grader signal vs mechanical
+   *  rubric checks. */
+  outcomesGrades: OutcomeGrade[];
+  /** Raw final agent.message text (the parser's input). Useful for eval /
+   *  debugging when format-discipline drifts and the parsed fields come back
+   *  empty. */
+  lastAgentText: string;
 }
 
 // ─── V2: artifacts table (spec-v2.md §8) ────────────────────────────────────
