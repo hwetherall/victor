@@ -138,6 +138,15 @@ interface PendingToolUse {
   input: unknown;
   /** "builtin" → respond with user.tool_confirmation; "custom" → user.custom_tool_result. */
   kind: "builtin" | "custom";
+  /** Sub-thread the tool_use originated on (`sthr_*`), captured from
+   *  `ev.session_thread_id`. Per Anthropic SDK docstring on agent.{tool_use,
+   *  custom_tool_use}.session_thread_id: "Echo this on a user.{tool_confirmation,
+   *  custom_tool_result} event to route the [approval/result] back." Without
+   *  the echo on a multiagent session, the API rejects with
+   *  "no non-archived thread is waiting on tool_use_id sevt_..." (the
+   *  reply hits the primary thread which isn't actually the waiting thread).
+   *  Empty/null when the tool_use was on the primary thread itself. */
+  sessionThreadId?: string | null;
   /** Set true after we've replied. Prevents double-responding when the API
    *  re-emits idle with a still-pending event id from a prior cycle (which
    *  happens when the harness queues multiple agent.tool_use emits but only
@@ -154,6 +163,15 @@ interface StreamCollectors {
   pendingToolUses: PendingToolUse[];
   reasoningTrace: ReasoningStep[];
   outcomesGrades: OutcomeGrade[];
+  /** Untruncated content from `write` / `edit` tool calls targeting
+   *  `/mnt/session/outputs/*`. STORY-021: the Researcher reliably writes its
+   *  structured ANSWER block to a sandbox file but emits a chatty status
+   *  report as its final agent.message — the parser walks this list as a
+   *  fallback when lastAgentText has no parseable block. The reasoning-trace
+   *  copy of the same content is truncated by `safeStringify` to 4000 chars,
+   *  which loses the tail of long blocks; this collector keeps the full
+   *  text for parsing. */
+  sandboxBlockSources: string[];
 }
 
 interface ConsumeResult {
@@ -221,25 +239,35 @@ async function consumeStreamEvents(
           // Built-in tool. Most auto-execute, but always_ask permission lands
           // the event in stop_reason.event_ids and we respond with
           // user.tool_confirmation. Track defensively.
+          // STORY-020 debug: full event dump for dispatch diagnosis.
+          console.log(`[v2-debug] agent.tool_use FULL=${JSON.stringify(ev).slice(0, 800)}`);
           collectors.pendingToolUses.push({
             eventId: ev.id as string,
             name: ev.name as string,
             input: ev.input,
             kind: "builtin",
+            sessionThreadId: typeof ev.session_thread_id === "string" ? ev.session_thread_id : null,
           });
           collectors.reasoningTrace.push({
             phase: `tool_use:${ev.name as string}`,
             content: safeStringify(ev.input),
             timestamp: eventTs,
           });
+          // STORY-021 sandbox-block fallback: capture full untruncated content
+          // from write/edit calls to /mnt/session/outputs/* — the Researcher
+          // (and likely the Investigator) reliably puts its structured block
+          // there even when its final agent.message is a chatty status report.
+          captureSandboxBlock(collectors.sandboxBlockSources, ev.name as string, ev.input);
           break;
         }
         case "agent.custom_tool_use": {
+          console.log(`[v2-debug] agent.custom_tool_use FULL=${JSON.stringify(ev).slice(0, 800)}`);
           collectors.pendingToolUses.push({
             eventId: ev.id as string,
             name: ev.name as string,
             input: ev.input,
             kind: "custom",
+            sessionThreadId: typeof ev.session_thread_id === "string" ? ev.session_thread_id : null,
           });
           collectors.reasoningTrace.push({
             phase: `tool_use:${ev.name as string}`,
@@ -277,6 +305,7 @@ async function consumeStreamEvents(
         case "session.status_idle": {
           stopReason =
             (ev.stop_reason as StopReason | null | undefined) ?? null;
+          console.log(`[v2-debug] session.status_idle stop_reason=${JSON.stringify(stopReason)}`);
           break;
         }
         // STORY-017 multi-agent surface. The Investigator is configured as a
@@ -296,6 +325,7 @@ async function consumeStreamEvents(
           break;
         }
         case "session.thread_status_running": {
+          console.log(`[v2-debug] session.thread_status_running FULL=${JSON.stringify(ev).slice(0, 500)}`);
           collectors.reasoningTrace.push({
             phase: `thread_running:${typeof ev.agent_name === "string" ? ev.agent_name : "sub"}`,
             content: typeof ev.session_thread_id === "string" ? ev.session_thread_id : "",
@@ -324,7 +354,32 @@ async function consumeStreamEvents(
           // multi-agent docs ("the event is cross-posted to the primary
           // thread with session_thread_id identifying the originating
           // session thread"). Keep this case purely as a trace breadcrumb.
+          console.log(`[v2-debug] session.thread_status_idle FULL=${JSON.stringify(ev).slice(0, 500)}`);
           const subStop = (ev.stop_reason as StopReason | null | undefined) ?? null;
+          // STORY-020 fix (gotcha #17): when a sub-thread idles with
+          // requires_action, the agent.{tool_use,custom_tool_use} events
+          // emitted on that sub-thread carry NO session_thread_id (per
+          // SDK docstring: "Empty on the thread's own events"). The
+          // thread-level idle event is where the routing info lives:
+          // it carries `session_thread_id` AND the `event_ids` that need
+          // a reply. Apply the sub-thread id to each matching pending
+          // tool_use here so dispatchToolResponses can echo it on the
+          // reply. Without this echo, the API rejects every reply with
+          // "no non-archived thread is waiting on tool_use_id sevt_..."
+          // because session-level events.send routes to the primary,
+          // not the sub-thread that's actually waiting.
+          const subThreadId =
+            typeof ev.session_thread_id === "string" ? ev.session_thread_id : null;
+          if (
+            subThreadId &&
+            subStop?.type === "requires_action" &&
+            Array.isArray(subStop.event_ids)
+          ) {
+            for (const eid of subStop.event_ids) {
+              const tu = collectors.pendingToolUses.find((p) => p.eventId === eid);
+              if (tu && !tu.sessionThreadId) tu.sessionThreadId = subThreadId;
+            }
+          }
           collectors.reasoningTrace.push({
             phase: `thread_idle:${typeof ev.agent_name === "string" ? ev.agent_name : "sub"}`,
             content: subStop ? `stop_reason=${subStop.type}` : "",
@@ -407,8 +462,21 @@ async function dispatchToolResponses(
 
     if (tu.kind === "builtin") {
       try {
+        // Echo session_thread_id when the tool_use originated on a sub-thread
+        // (multiagent / sub-agent dispatch). The SDK's params type doesn't
+        // declare this field but the API documents + accepts it; without the
+        // echo, the API returns 400 "no non-archived thread is waiting on
+        // tool_use_id". Cast through unknown to bypass the missing-field
+        // strictness — runtime API ignores the extra field on primary-thread
+        // tool uses (sessionThreadId === null).
+        const event: Record<string, unknown> = {
+          type: "user.tool_confirmation",
+          tool_use_id: id,
+          result: "allow",
+        };
+        if (tu.sessionThreadId) event.session_thread_id = tu.sessionThreadId;
         await client.beta.sessions.events.send(sessionId, {
-          events: [{ type: "user.tool_confirmation", tool_use_id: id, result: "allow" }],
+          events: [event as unknown as Parameters<typeof client.beta.sessions.events.send>[1]["events"][number]],
         });
         tu.responded = true;
         responded++;
@@ -455,15 +523,19 @@ async function dispatchToolResponses(
       timestamp: new Date().toISOString(),
     });
     try {
+      // Echo session_thread_id for sub-thread routing (see comment in builtin
+      // branch above). Cast through unknown — the SDK params type omits the
+      // field but the API requires it on multiagent sub-thread dispatches.
+      const event: Record<string, unknown> = {
+        type: "user.custom_tool_result",
+        custom_tool_use_id: id,
+        content: [{ type: "text", text: result.text }],
+        is_error: result.is_error ?? false,
+      };
+      if (tu.sessionThreadId) event.session_thread_id = tu.sessionThreadId;
+      console.log(`[v2-debug] sending custom_tool_result for ${tu.name}@${id}, session_thread_id=${JSON.stringify(event.session_thread_id ?? null)}`);
       await client.beta.sessions.events.send(sessionId, {
-        events: [
-          {
-            type: "user.custom_tool_result",
-            custom_tool_use_id: id,
-            content: [{ type: "text", text: result.text }],
-            is_error: result.is_error ?? false,
-          },
-        ],
+        events: [event as unknown as Parameters<typeof client.beta.sessions.events.send>[1]["events"][number]],
       });
       tu.responded = true;
       responded++;
@@ -534,6 +606,7 @@ export async function createInvestigatorSession(
     pendingToolUses: [], // persisted across cycles; entries marked responded after reply
     reasoningTrace: [],
     outcomesGrades: [],
+    sandboxBlockSources: [],
   };
   const side: DispatchSideEffects = {
     artifacts: [],
@@ -567,6 +640,32 @@ export async function createInvestigatorSession(
       break;
     }
 
+    // Distinguish "spin scenario" (event_ids has unresponded entries we
+    // can't respond to → break to avoid infinite loop) from "re-emit
+    // scenario" (event_ids only references already-responded tool_uses →
+    // the API is re-firing while a built-in tool auto-executes; just
+    // re-stream and wait). Without this split, the loop terminated early
+    // when retrieve_documents was responded but read was still mid-flight
+    // on Anthropic's side.
+    const eventIdsNeedingResponse = eventIds.filter((id) => {
+      const tu = collectors.pendingToolUses.find((p) => p.eventId === id);
+      return tu && !tu.responded;
+    });
+
+    if (eventIdsNeedingResponse.length === 0) {
+      console.log(
+        `[v2] cycle ${cycles}: all event_ids already responded — re-streaming to wait for next event`,
+      );
+      try {
+        stream = await client.beta.sessions.events.stream(session.id);
+        continue;
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.warn(`[v2] re-stream failed (treating as session end): ${msg}`);
+        break;
+      }
+    }
+
     const respondedCount = await dispatchToolResponses(
       client,
       session.id,
@@ -589,15 +688,53 @@ export async function createInvestigatorSession(
     }
   }
 
+  // STORY-020 Phase B sandbox-block fallback. Mirror of the Researcher
+  // post-processing pattern (createResearcherSession lines ~1078): pick the
+  // source with the most parseable structured fields among lastAgentText +
+  // every captured sandbox write. Phase A.5 confirmed the Investigator
+  // drift mode matches the Researcher's: chatty status as final
+  // agent.message, structured CONFIDENCE/EVIDENCE_SUMMARY/REJECTED_ALTERNATIVES
+  // block written to /mnt/session/outputs/*.md. The parsers don't care
+  // which source the text comes from; the only question is which source
+  // has the most structured-field hits.
+  const scoreSource = (src: string): number => {
+    let score = 0;
+    if (parseConfidence(src) > 0) score++;
+    if (extractField(src, "EVIDENCE_SUMMARY")) score++;
+    if (parseRejectedAlternatives(src).length > 0) score++;
+    return score;
+  };
+  let blockSource = lastAgentText;
+  let bestScore = scoreSource(lastAgentText);
+  for (const src of collectors.sandboxBlockSources) {
+    const score = scoreSource(src);
+    if (score > bestScore) {
+      blockSource = src;
+      bestScore = score;
+    }
+  }
+
   // Final output assembly. Primary parser reads CONFIDENCE/EVIDENCE_SUMMARY/
-  // REJECTED_ALTERNATIVES from the last agent.message. Fallback (when the
+  // REJECTED_ALTERNATIVES from the chosen block source. Fallback (when the
   // agent satisfied the outcome via tools without emitting a summary
-  // block): derive confidence from outcomes grades, evidence summary from
-  // any captured trace text.
-  let confidence = parseConfidence(lastAgentText);
+  // block anywhere): derive confidence from outcomes grades, evidence
+  // summary from any captured trace text.
+  let confidence = parseConfidence(blockSource);
   let evidenceSummary =
-    extractField(lastAgentText, "EVIDENCE_SUMMARY") ?? lastAgentText.slice(0, 800);
-  const rejectedAlternatives = parseRejectedAlternatives(lastAgentText);
+    extractField(blockSource, "EVIDENCE_SUMMARY") ?? lastAgentText.slice(0, 800);
+  const rejectedAlternatives = parseRejectedAlternatives(blockSource);
+
+  if (confidence === 0) {
+    // STORY-020 narrative fallback: try loose "Confidence: 0.6" / "**Confidence:** 0.60"
+    // form before grader-derived. Recon (session 2 SH4.2 run) showed the Investigator
+    // routinely writes confidence in narrative prose rather than emitting the strict
+    // first-line CONFIDENCE: block. Run the loose parser on the chosen block source
+    // first (which may be a sandbox file), falling back to lastAgentText.
+    confidence = parseConfidenceLoose(blockSource);
+    if (confidence === 0 && blockSource !== lastAgentText) {
+      confidence = parseConfidenceLoose(lastAgentText);
+    }
+  }
 
   if (confidence === 0) {
     // Three-tier fallback for when the agent didn't lead with CONFIDENCE:.
@@ -649,6 +786,7 @@ export async function createInvestigatorSession(
     managedAgentSessionId: session.id,
     usage,
     outcomesGrades: collectors.outcomesGrades,
+    lastAgentText,
   };
 }
 
@@ -660,6 +798,41 @@ function safeStringify(value: unknown): string {
   } catch {
     return String(value).slice(0, 4000);
   }
+}
+
+/** STORY-021 sandbox-block fallback. When the agent calls `write` or `edit`
+ *  on a file under `/mnt/session/`, capture the full content (or edit's
+ *  `new_string`) into the collector. Tolerates the `path` / `file_path`
+ *  schema variation across the built-in toolset. Caller filters by content
+ *  (looks for `ANSWER:` / `CONFIDENCE:`) at parse time — this function is
+ *  purely the capture step.
+ *
+ *  STORY-020 Phase B broadened the path filter from `/mnt/session/outputs/`
+ *  to `/mnt/session/`: Phase A.5's Investigator wrote to `outputs/` but the
+ *  agent may also use `work/` or other scratchpads. Capture content matching
+ *  is the real filter — letting through extra files is harmless because the
+ *  parsers anchor on `CONFIDENCE:` / `ANSWER:` regexes. */
+function captureSandboxBlock(
+  sink: string[],
+  toolName: string,
+  rawInput: unknown,
+): void {
+  if (toolName !== "write" && toolName !== "edit") return;
+  if (rawInput === null || typeof rawInput !== "object") return;
+  const input = rawInput as Record<string, unknown>;
+  const path =
+    (typeof input.path === "string" && input.path) ||
+    (typeof input.file_path === "string" && input.file_path) ||
+    "";
+  if (!/\/mnt\/session\//.test(path)) return;
+  // `write` carries the full file content; `edit` carries the after-edit
+  // chunk. Either is parseable on its own — the parsers are anchored on
+  // `ANSWER:` / `CITATIONS:` regexes that don't require surrounding context.
+  const content =
+    (typeof input.content === "string" && input.content) ||
+    (typeof input.new_string === "string" && input.new_string) ||
+    "";
+  if (content) sink.push(content);
 }
 
 /** Inspect a tool-handler return value and append to session-level lists. */
@@ -763,6 +936,28 @@ export function parseConfidence(text: string): number {
   return Math.max(0, Math.min(1, n));
 }
 
+/** STORY-020: loose narrative-form confidence extraction. The Investigator
+ *  often writes "Confidence: 0.60" or "**Confidence:** 0.60 (calibrated to
+ *  single-point estimate)" in its closing prose rather than emitting the
+ *  strict `CONFIDENCE: 0.6` first-line block. Used as a fallback layer ONLY
+ *  when the strict parser returns 0 — strict still wins when the agent
+ *  complies with the format.
+ *
+ *  Matches: `Confidence` (case-insensitive) followed by up to 30 non-letter
+ *  non-digit chars (handles `: `, `**: **`, ` is `, ` equals `, etc.) then a
+ *  number in 0..1. Caps the inter-token gap to avoid matching across
+ *  paragraph breaks. */
+export function parseConfidenceLoose(text: string): number {
+  // Use [^A-Za-z\n]{0,30} so "Confidence is 0.6" / "**Confidence:** 0.6" /
+  // "Confidence (single-point estimate) 0.6" all match, but
+  // "Confidence... [another sentence with letters] 0.6" does not.
+  const m = text.match(/Confidence[^A-Za-z\n]{0,30}([0-9](?:\.[0-9]+)?|\.[0-9]+)/i);
+  if (!m) return 0;
+  const n = Number(m[1]);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(1, n));
+}
+
 export function extractField(text: string, name: string): string | null {
   const re = new RegExp(`${name}:\\s*([\\s\\S]*?)(?=\\n[A-Z_]+:|$)`, "i");
   const m = text.match(re);
@@ -848,6 +1043,7 @@ export async function createResearcherSession(
     pendingToolUses: [],
     reasoningTrace: [],
     outcomesGrades: [],
+    sandboxBlockSources: [],
   };
   const side: DispatchSideEffects = {
     artifacts: [],
@@ -873,6 +1069,25 @@ export async function createResearcherSession(
     if (!consume.stopReason || consume.stopReason.type !== "requires_action") break;
 
     const eventIds = consume.stopReason.event_ids ?? [];
+    // Same re-emit-vs-spin distinction as createInvestigatorSession (see
+    // comment there): re-stream when event_ids only references
+    // already-responded tool_uses; break only when we have unresponded
+    // event_ids we couldn't service.
+    const eventIdsNeedingResponse = eventIds.filter((id) => {
+      const tu = collectors.pendingToolUses.find((p) => p.eventId === id);
+      return tu && !tu.responded;
+    });
+    if (eventIdsNeedingResponse.length === 0) {
+      try {
+        stream = await client.beta.sessions.events.stream(session.id);
+        continue;
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.warn(`[v2] researcher re-stream failed (treating as session end): ${msg}`);
+        break;
+      }
+    }
+
     const respondedCount = await dispatchToolResponses(
       client,
       session.id,
@@ -892,13 +1107,28 @@ export async function createResearcherSession(
     }
   }
 
+  // STORY-021 sandbox-block fallback: pick the source with the most
+  // parseable citations among lastAgentText + every captured sandbox write.
+  // Sonnet reliably writes the structured block to /mnt/session/outputs/*
+  // but emits a chatty status report as its final agent.message; the parsers
+  // don't care which source the text comes from.
+  let blockSource = lastAgentText;
+  let bestCitationCount = parseCitations(lastAgentText).length;
+  for (const src of collectors.sandboxBlockSources) {
+    const n = parseCitations(src).length;
+    if (n > bestCitationCount) {
+      blockSource = src;
+      bestCitationCount = n;
+    }
+  }
+
   const answer =
-    extractField(lastAgentText, "ANSWER") ??
+    extractField(blockSource, "ANSWER") ??
     lastAgentText.slice(0, 800);
-  const confidence = parseConfidence(lastAgentText);
-  const citations = parseCitations(lastAgentText);
-  const searchPath = parseSearchPath(lastAgentText);
-  const stoppedBecause = parseStoppedBecause(lastAgentText);
+  const confidence = parseConfidence(blockSource);
+  const citations = parseCitations(blockSource);
+  const searchPath = parseSearchPath(blockSource);
+  const stoppedBecause = parseStoppedBecause(blockSource);
 
   return {
     answer,

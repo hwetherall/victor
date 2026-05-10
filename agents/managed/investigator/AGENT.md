@@ -101,7 +101,7 @@ Constraints:
   in your reasoning trace, they satisfy the quantitative-lineage
   requirement above.
 
-## Output — ALWAYS emit this before stopping
+### Output — ALWAYS emit this before stopping
 
 Your VERY LAST action MUST be an `agent.message` whose **first line** is
 `CONFIDENCE: <number>` followed by the rest of the structured block.

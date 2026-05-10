@@ -443,6 +443,10 @@ export interface InvestigatorOutput {
   };
   /** Per-iteration outcomes grader verdicts. Empty when outcomes wasn't used. */
   outcomesGrades: OutcomeGrade[];
+  /** Raw final agent.message text (the parser's input). Useful for eval /
+   *  debugging when format-discipline drifts and the parsed fields come back
+   *  empty. STORY-020 Phase B parity with ResearcherOutput.lastAgentText. */
+  lastAgentText: string;
 }
 
 /** Artifact types persisted to the artifacts table (spec-v2.md §8). */

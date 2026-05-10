@@ -217,7 +217,11 @@ export async function POST(req: Request) {
     // tolerate empty body — fixture defaults below
   }
   const questions = body.questions ?? DEFAULT_QUESTIONS;
-  const maxSearches = body.maxSearches ?? 8;
+  // Default capped at 5 (was 8) post-iter#3 cost calibration. Each web_fetch
+  // pulls 30-100k input tokens; capping the search budget is the cheapest
+  // single lever for keeping per-run cost predictable. Override via body for
+  // STORY-022's full-quality runs.
+  const maxSearches = body.maxSearches ?? 5;
   const confidenceTarget = body.confidenceTarget ?? 0.8;
 
   interface QResult {
