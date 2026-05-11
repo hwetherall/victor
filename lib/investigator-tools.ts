@@ -16,7 +16,7 @@
 import * as path from "node:path";
 import { insforge } from "./db";
 import { embedSingle } from "./embeddings";
-import type { InvestigatorInput } from "./schema";
+import type { ArtifactType, InvestigatorInput, InvestigatorOutput } from "./schema";
 
 export interface ToolResult {
   text: string;
@@ -128,7 +128,7 @@ const MIME_BY_TYPE: Record<UploadArtifactInput["type"], string> = {
   model_lineage: "application/json",
 };
 
-async function handleUploadArtifact(
+export async function handleUploadArtifact(
   input: InvestigatorInput,
   raw: unknown,
 ): Promise<ToolResult> {
@@ -238,6 +238,82 @@ async function handleUploadArtifact(
       bytes: buf.length,
     }),
   };
+}
+
+// ─── rescueArtifactsFromTrace ───────────────────────────────────────────────
+//
+// STORY-020 wedge: server-side rescue for the Claude failure mode where the
+// agent runs `base64 -w 0 /mnt/session/outputs/X.ext` via bash and then
+// end_turns WITHOUT chaining into upload_artifact (observed on both Haiku 4.5
+// and Sonnet 4.6 — the model treats the b64 in the bash tool_result as the
+// deliverable). The stream consumer captures the full untruncated b64 string
+// from the matching tool_result into `collectors.sandboxFileRescues`. This
+// function decodes each rescue entry and uploads via handleUploadArtifact,
+// returning the resulting artifact records for inclusion in InvestigatorOutput.
+//
+// Idempotent against handleUploadArtifact: if the agent actually DID call
+// upload_artifact for a given file during the session, that filename appears
+// in `alreadyUploaded` and the rescue skips it. Metadata flags rescued
+// artifacts as `rescued_from_bash` so we can distinguish them in
+// post-processing / drill-down UI later.
+
+export async function rescueArtifactsFromTrace(
+  input: InvestigatorInput,
+  rescues: Array<{ path: string; type: ArtifactType; b64: string }>,
+  alreadyUploaded: InvestigatorOutput["artifacts"],
+): Promise<InvestigatorOutput["artifacts"]> {
+  if (rescues.length === 0) return [];
+
+  // Filenames from prior uploads land in the uri as `v{N}_filename.ext` —
+  // strip the version prefix to compare against the bash-named file paths.
+  const seenBasenames = new Set<string>();
+  for (const a of alreadyUploaded) {
+    const baseFromUri = a.uri.split("/").pop() ?? "";
+    seenBasenames.add(baseFromUri.replace(/^v\d+_/, ""));
+  }
+
+  const out: InvestigatorOutput["artifacts"] = [];
+  for (const r of rescues) {
+    const basename = path.basename(r.path);
+    if (seenBasenames.has(basename)) {
+      console.log(
+        `[v2] rescue skipped — ${basename} already uploaded by upload_artifact`,
+      );
+      continue;
+    }
+    const tr = await handleUploadArtifact(input, {
+      filename: r.path,
+      content_b64: r.b64,
+      type: r.type,
+      metadata: { rescued_from_bash: true, source_sandbox_path: r.path },
+    });
+    if (tr.is_error) {
+      console.warn(`[v2] rescue failed for ${r.path}: ${tr.text}`);
+      continue;
+    }
+    try {
+      const parsed = JSON.parse(tr.text) as {
+        artifact_id: string;
+        uri: string;
+        version: number;
+      };
+      out.push({
+        artifactId: parsed.artifact_id,
+        uri: parsed.uri,
+        type: r.type,
+        version: parsed.version,
+      });
+      seenBasenames.add(basename);
+      console.log(
+        `[v2] rescue uploaded ${basename} → artifact_id=${parsed.artifact_id} v${parsed.version}`,
+      );
+    } catch (e) {
+      console.warn(
+        `[v2] rescue uploaded ${r.path} but failed to parse response: ${e instanceof Error ? e.message : e}`,
+      );
+    }
+  }
+  return out;
 }
 
 // ─── ask_user ────────────────────────────────────────────────────────────────

@@ -9,7 +9,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
-import { buildToolHandlers } from "./investigator-tools";
+import { buildToolHandlers, rescueArtifactsFromTrace } from "./investigator-tools";
 import type {
   ArtifactType,
   InvestigatorInput,
@@ -172,7 +172,38 @@ interface StreamCollectors {
    *  which loses the tail of long blocks; this collector keeps the full
    *  text for parsing. */
   sandboxBlockSources: string[];
+  /** STORY-020 wedge artifact rescue: when the agent runs
+   *  `base64 -w 0 /mnt/session/outputs/X.ext` via bash and then end_turns
+   *  WITHOUT chaining into upload_artifact (the Claude failure mode observed
+   *  on both Haiku 4.5 and Sonnet 4.6 wedge runs 2026-05-11 — the model
+   *  treats the b64 in the bash tool_result as the deliverable rather than as
+   *  input to the next tool call), the orchestrator captures the full b64
+   *  output here and persists it server-side post-session. Two-pass: the
+   *  agent.tool_use handler registers the tool_use_id + path + type on the
+   *  watchlist when the command matches the pattern; the agent.tool_result
+   *  handler materializes a rescue entry with the untruncated b64 text
+   *  (bypassing the 4000-char trace truncation). */
+  bashBase64Watchlist: Map<string, { path: string; type: ArtifactType }>;
+  sandboxFileRescues: Array<{ path: string; type: ArtifactType; b64: string }>;
 }
+
+/** Extension-to-ArtifactType map for the base64-bash rescue pattern. The
+ *  agent's bash command names the file path; we infer the type from the
+ *  extension. Unknown extensions are dropped (no rescue attempted). */
+const EXT_TO_ARTIFACT_TYPE: Record<string, ArtifactType> = {
+  xlsx: "xlsx",
+  csv: "csv",
+  png: "png",
+  md: "md",
+  json: "json",
+};
+
+/** Match `base64 -w 0 /mnt/session/<path>` anywhere in a bash command.
+ *  Tolerates surrounding pipes/redirects (the agent sometimes still does
+ *  `> /tmp/f.txt && cat /tmp/f.txt` — the b64 still ends up in the
+ *  tool_result either way because of the cat). */
+const BASE64_BASH_RE =
+  /base64\s+-w\s+0\s+(\/mnt\/session\/[^\s>|&;]+\.\w+)/;
 
 interface ConsumeResult {
   /** Last `agent.message` text observed. Caller may pass this back in via
@@ -258,6 +289,25 @@ async function consumeStreamEvents(
           // (and likely the Investigator) reliably puts its structured block
           // there even when its final agent.message is a chatty status report.
           captureSandboxBlock(collectors.sandboxBlockSources, ev.name as string, ev.input);
+          // STORY-020 wedge rescue: when the agent runs `base64 -w 0 <path>`,
+          // register its tool_use_id on the watchlist so the matching
+          // agent.tool_result can capture the full untruncated b64 string.
+          if (ev.name === "bash") {
+            const command =
+              (ev.input as { command?: string } | null)?.command ?? "";
+            const match = command.match(BASE64_BASH_RE);
+            if (match) {
+              const filepath = match[1];
+              const ext = filepath.split(".").pop()?.toLowerCase() ?? "";
+              const type = EXT_TO_ARTIFACT_TYPE[ext];
+              if (type) {
+                collectors.bashBase64Watchlist.set(ev.id as string, {
+                  path: filepath,
+                  type,
+                });
+              }
+            }
+          }
           break;
         }
         case "agent.custom_tool_use": {
@@ -278,13 +328,43 @@ async function consumeStreamEvents(
         }
         case "agent.tool_result": {
           const blocks = (ev.content as Array<{ text?: string }>) ?? [];
-          const text = blocks.map((b) => b.text ?? "").join("\n").slice(0, 4000);
-          if (text) {
+          const fullText = blocks.map((b) => b.text ?? "").join("\n");
+          const truncatedText = fullText.slice(0, 4000);
+          if (truncatedText) {
             collectors.reasoningTrace.push({
               phase: "tool_result",
-              content: text,
+              content: truncatedText,
               timestamp: eventTs,
             });
+          }
+          // STORY-020 wedge rescue: if this tool_result corresponds to a
+          // watched `base64 -w 0 <path>` bash call, capture the full
+          // untruncated b64 string for post-session upload. The bash sometimes
+          // wraps `> /tmp/f.txt && cat /tmp/f.txt` around the base64 call —
+          // the cat still puts the b64 in the tool_result, so the same
+          // capture path handles both shapes.
+          const tuid = ev.tool_use_id as string | undefined;
+          const watched = tuid
+            ? collectors.bashBase64Watchlist.get(tuid)
+            : undefined;
+          if (watched && fullText) {
+            const cleaned = fullText.replace(/\s+/g, "");
+            // Sanity: looks like base64, large enough to be a real file
+            // (>100 chars), not an error message containing the word.
+            if (
+              /^[A-Za-z0-9+/]+={0,2}$/.test(cleaned) &&
+              cleaned.length > 100
+            ) {
+              collectors.sandboxFileRescues.push({
+                path: watched.path,
+                type: watched.type,
+                b64: cleaned,
+              });
+              console.log(
+                `[v2] sandboxFileRescue captured ${watched.path} (${cleaned.length} b64 chars, type=${watched.type}) from tool_use_id=${tuid}`,
+              );
+            }
+            collectors.bashBase64Watchlist.delete(tuid!);
           }
           break;
         }
@@ -607,6 +687,8 @@ export async function createInvestigatorSession(
     reasoningTrace: [],
     outcomesGrades: [],
     sandboxBlockSources: [],
+    bashBase64Watchlist: new Map(),
+    sandboxFileRescues: [],
   };
   const side: DispatchSideEffects = {
     artifacts: [],
@@ -716,6 +798,21 @@ export async function createInvestigatorSession(
       blockSource = src;
       bestScore = score;
     }
+  }
+
+  // STORY-020 wedge rescue: run BEFORE confidence calibration so rescued
+  // artifacts feed the side.artifacts.length signals used in the fallback
+  // below. If the agent ran `base64 -w 0 /mnt/session/X.ext` and end_turned
+  // without chaining into upload_artifact (Claude failure mode on both
+  // Haiku 4.5 and Sonnet 4.6 wedge runs 2026-05-11), this persists the
+  // captured b64 server-side as a real artifacts row.
+  if (collectors.sandboxFileRescues.length > 0) {
+    const rescued = await rescueArtifactsFromTrace(
+      input,
+      collectors.sandboxFileRescues,
+      side.artifacts,
+    );
+    for (const a of rescued) side.artifacts.push(a);
   }
 
   // Final output assembly. Primary parser reads CONFIDENCE/EVIDENCE_SUMMARY/
@@ -1048,6 +1145,8 @@ export async function createResearcherSession(
     reasoningTrace: [],
     outcomesGrades: [],
     sandboxBlockSources: [],
+    bashBase64Watchlist: new Map(),
+    sandboxFileRescues: [],
   };
   const side: DispatchSideEffects = {
     artifacts: [],
