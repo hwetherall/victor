@@ -10,6 +10,7 @@
     "smoke": "tsx scripts/smoke-llm.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.1",
     "@insforge/sdk": "^1.2.6",
     "@tanstack/react-query": "^5.100.9",
     "@tavily/core": "^0.7.3",
@@ -21,6 +22,7 @@
     "react-dom": "^19.2.5",
     "reactflow": "^11.11.4",
     "unpdf": "^1.6.2",
+    "xlsx": "^0.18.5",
     "zustand": "^5.0.13"
   },
   "devDependencies": {

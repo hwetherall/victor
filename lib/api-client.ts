@@ -2,7 +2,7 @@
 // responses throw with the body's `error` field when available.
 
 import type { EvidenceItem } from "@/app/api/runs/[id]/nodes/[nodeId]/evidence/route";
-import type { MickyRun, Run, TreeNode } from "@/lib/schema";
+import type { Artifact, MickyRun, ReasoningTrace, Run, TreeNode, UserQuestion } from "@/lib/schema";
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: "no-store" });
@@ -115,6 +115,21 @@ export function fetchNodeEvidence(
   return getJson<EvidenceResponse>(
     `/api/runs/${runId}/nodes/${nodeId}/evidence`,
   );
+}
+
+// V2 leaf data: artifacts + reasoning trace + HITL escalations. Empty arrays
+// for V1 leaves.
+export interface NodeV2Response {
+  artifacts: Artifact[];
+  trace: ReasoningTrace | null;
+  escalations: UserQuestion[];
+}
+
+export function fetchNodeV2(
+  runId: string,
+  nodeId: string,
+): Promise<NodeV2Response> {
+  return getJson<NodeV2Response>(`/api/runs/${runId}/nodes/${nodeId}/v2`);
 }
 
 export interface StartRunResponse {
