@@ -49,8 +49,10 @@ export async function GET(req: Request) {
         content_first_400: string;
         content_length: number;
       }>;
+      all_phases?: Array<{ phase: string; preview: string }>;
     }>;
   }> = [];
+  const includeAll = url.searchParams.get("include_phases") === "1";
 
   if (sessionIds) {
     for (const sessionId of sessionIds) {
@@ -70,7 +72,7 @@ export async function GET(req: Request) {
       out.push({
         filter: `session=${sessionId}`,
         trace_count: rows.length,
-        traces: rows.map((row) => analyzeTrace(row)),
+        traces: rows.map((row) => analyzeTrace(row, includeAll)),
       });
     }
   } else {
@@ -91,14 +93,14 @@ export async function GET(req: Request) {
     out.push({
       filter: "recent_5",
       trace_count: rows.length,
-      traces: rows.map((row) => analyzeTrace(row)),
+      traces: rows.map((row) => analyzeTrace(row, includeAll)),
     });
   }
 
   return NextResponse.json({ ok: true, runs: out });
 }
 
-function analyzeTrace(row: ReasoningTrace) {
+function analyzeTrace(row: ReasoningTrace, includeAllPhases = false) {
   const steps = (row.steps ?? []) as ReasoningStep[];
   const messageSteps = steps.filter((s) => s.phase === "message");
   const writeSteps = steps.filter(
@@ -157,5 +159,11 @@ function analyzeTrace(row: ReasoningTrace) {
     last_message_starts_with_confidence:
       !!firstChars && /^CONFIDENCE:\s*[0-9.]/.test(firstChars),
     sandbox_writes: sandboxWrites,
+    all_phases: includeAllPhases
+      ? steps.map((s) => ({
+          phase: s.phase,
+          preview: (s.content ?? "").slice(0, 240).replace(/\n/g, " "),
+        }))
+      : undefined,
   };
 }

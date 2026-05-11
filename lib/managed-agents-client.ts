@@ -631,30 +631,34 @@ export async function createInvestigatorSession(
         `(${unresponded.map((p) => `${p.kind}:${p.name}@${p.eventId}`).join(",")})`,
     );
 
-    if (unresponded.length === 0) {
-      console.warn(
-        `[v2] cycle ${cycles}: no unresponded tool_uses left but session still ` +
-          `in requires_action — breaking. Session ${session.id} may have ` +
-          `out-of-band pending events.`,
-      );
-      break;
-    }
-
-    // Distinguish "spin scenario" (event_ids has unresponded entries we
-    // can't respond to → break to avoid infinite loop) from "re-emit
-    // scenario" (event_ids only references already-responded tool_uses →
-    // the API is re-firing while a built-in tool auto-executes; just
-    // re-stream and wait). Without this split, the loop terminated early
-    // when retrieve_documents was responded but read was still mid-flight
-    // on Anthropic's side.
+    // Decide what to do this cycle by intersecting the API's event_ids with
+    // our pendingToolUses' responded flag. Three cases:
+    //
+    //   (1) Some event_ids reference unresponded tool_uses → real dispatch.
+    //   (2) All event_ids reference already-responded tool_uses (or eventIds
+    //       is empty) → re-emit / agent-still-thinking scenario; re-stream.
+    //   (3) eventIds has IDs not in our pendingToolUses (orphan events) →
+    //       informational warning, then re-stream. MAX_CYCLES is the safety
+    //       net against an infinite loop.
+    //
+    // The previous `unresponded.length === 0 → break` early-exit (STORY-020
+    // Phase B observation 2026-05-10) bailed prematurely when a leaf went
+    // bash-result → idle → agent-still-thinking. With non-multiagent Haiku,
+    // both tam-sam-som and investment-vs-ramp emitted `base64 -w 0 ... | cat`
+    // intending to call upload_artifact next, but the cycle broke mid-thought.
+    // Always re-stream when there's no new dispatch work; let MAX_CYCLES + the
+    // 0-responses spin guard below catch genuine stalls.
     const eventIdsNeedingResponse = eventIds.filter((id) => {
       const tu = collectors.pendingToolUses.find((p) => p.eventId === id);
       return tu && !tu.responded;
     });
 
     if (eventIdsNeedingResponse.length === 0) {
+      const orphan = eventIds.length > 0
+        ? ` (eventIds=[${eventIds.join(",")}] all already-responded or orphan)`
+        : "";
       console.log(
-        `[v2] cycle ${cycles}: all event_ids already responded — re-streaming to wait for next event`,
+        `[v2] cycle ${cycles}: no new dispatch work this cycle — re-streaming to wait for next event${orphan}`,
       );
       try {
         stream = await client.beta.sessions.events.stream(session.id);

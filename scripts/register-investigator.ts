@@ -107,12 +107,16 @@ const customTools = [
     type: "custom" as const,
     name: "upload_artifact",
     description:
-      "Upload a file from /mnt/session/outputs/ to the case's artifact " +
-      "storage and register it in the artifacts table. Files written to the " +
-      "sandbox are NOT auto-tracked — call this explicitly after creating " +
-      "any deliverable (xlsx, csv, png, md). Returns the artifact_id, uri, " +
-      "and version for inclusion in your final summary. To create v2 of an " +
-      "existing artifact (after revision), pass parent_artifact_id.",
+      "Persist a sandbox file to artifact storage. THE ONLY way to make a " +
+      "file survive the session — files in /mnt/session/outputs/ are LOST on " +
+      "session end unless you call this tool. Workflow (same turn): (1) bash " +
+      "`base64 -w 0 /mnt/session/outputs/file.ext` — no redirection, no cat, " +
+      "let the b64 land in the tool_result; (2) call upload_artifact with that " +
+      "b64 string as content_b64, the path as filename, the type. Catting b64 " +
+      "to stdout is NOT an upload — only this tool persists the file. Returns " +
+      "{artifact_id, uri, version} — paste artifact_id into your final " +
+      "CONFIDENCE block's ARTIFACTS field. For v2+ of an artifact (after " +
+      "revision), pass parent_artifact_id to track the lineage.",
     input_schema: {
       type: "object" as const,
       properties: {
@@ -124,9 +128,12 @@ const customTools = [
         content_b64: {
           type: "string",
           description:
-            "Base64-encoded contents of the file. Read the file in bash, " +
-            "base64 it, and pass the string. The orchestrator decodes and " +
-            "uploads.",
+            "Base64-encoded contents of the file. Run `base64 -w 0 <path>` " +
+            "in bash FIRST (without any output redirection or cat — just let " +
+            "the tool_result carry the b64 string). Then call this tool with " +
+            "the string copied from that tool_result. The orchestrator decodes " +
+            "this string and uploads it to storage. Catting the b64 to stdout " +
+            "is NOT a substitute for calling this tool.",
         },
         type: {
           type: "string",
