@@ -36,8 +36,15 @@ const NUM_YEARS = YEAR_LABELS.length;
 
 const MODES: FinancialMode[] = ["build", "buy", "partner"];
 
-export function FinancialModelPanel() {
+interface FinancialModelPanelProps {
+  defaultCollapsed?: boolean;
+}
+
+export function FinancialModelPanel({
+  defaultCollapsed = false,
+}: FinancialModelPanelProps) {
   const [mode, setMode] = useState<FinancialMode>(DEFAULT_MODE);
+  const [isExpanded, setIsExpanded] = useState(!defaultCollapsed);
   const [revealedCount, setRevealedCount] = useState(0);
   const [glowActive, setGlowActive] = useState(false);
   const [tilesRevealed, setTilesRevealed] = useState(0);
@@ -57,6 +64,8 @@ export function FinancialModelPanel() {
     setRevealedCount(0);
     setGlowActive(false);
     setTilesRevealed(0);
+
+    if (!isExpanded) return;
 
     // Cell reveal — row-by-row, left-to-right.
     intervalRef.current = setInterval(() => {
@@ -92,43 +101,69 @@ export function FinancialModelPanel() {
       timeoutsRef.current.forEach((t) => clearTimeout(t));
       timeoutsRef.current = [];
     };
-  }, [mode]);
+  }, [mode, isExpanded]);
 
   const model = MODELS[mode];
 
   return (
     <section className="rounded-lg border border-neutral-800 bg-neutral-950">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-800 px-4 py-3">
-        <div>
-          <h3 className="text-sm font-semibold text-neutral-100">
-            Financial model
-          </h3>
-          <p className="mt-1 font-mono text-[11px] text-neutral-500">
-            5-year DCF · WACC {Math.round(WACC * 100)}% · hurdle {Math.round(IRR_HURDLE * 100)}%
-          </p>
+        <button
+          type="button"
+          onClick={() => setIsExpanded((value) => !value)}
+          aria-expanded={isExpanded}
+          className="flex min-w-0 flex-1 items-center gap-3 text-left"
+        >
+          <span
+            aria-hidden="true"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-neutral-700 font-mono text-xs text-neutral-400"
+          >
+            {isExpanded ? "-" : "+"}
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-neutral-100">
+              Financial model
+            </span>
+            <span className="mt-1 block truncate font-mono text-[11px] text-neutral-500">
+              5-year DCF · WACC {Math.round(WACC * 100)}% · hurdle {Math.round(IRR_HURDLE * 100)}%
+              {!isExpanded && (
+                <>
+                  {" "}
+                  · {MODE_LABELS[mode]} · IRR {(model.results.irr * 100).toFixed(1)}% · payback{" "}
+                  {model.results.payback.toFixed(1)}y
+                </>
+              )}
+            </span>
+          </span>
+        </button>
+        <div onClick={(event) => event.stopPropagation()}>
+          <ModeSelector mode={mode} onChange={setMode} />
         </div>
-        <ModeSelector mode={mode} onChange={setMode} />
       </div>
 
-      <p className="px-4 pt-3 text-xs text-neutral-400">
-        {MODE_DESCRIPTIONS[mode]}
-      </p>
+      {isExpanded && (
+        <>
+          <p className="px-4 pt-3 text-xs text-neutral-400">
+            {MODE_DESCRIPTIONS[mode]}
+          </p>
 
-      <div className="overflow-x-auto px-4 pb-4 pt-3">
-        <FinancialTable
-          rows={model.rows}
-          revealedCount={revealedCount}
-          glowActive={glowActive}
-        />
-      </div>
+          <div className="overflow-x-auto px-4 pb-4 pt-3">
+            <FinancialTable
+              rows={model.rows}
+              revealedCount={revealedCount}
+              glowActive={glowActive}
+            />
+          </div>
 
-      <div className="border-t border-neutral-800 px-4 py-4">
-        <ResultTiles
-          results={model.results}
-          revealed={tilesRevealed}
-        />
-        <Narration text={model.narration} visible={tilesRevealed >= 3} />
-      </div>
+          <div className="border-t border-neutral-800 px-4 py-4">
+            <ResultTiles
+              results={model.results}
+              revealed={tilesRevealed}
+            />
+            <Narration text={model.narration} visible={tilesRevealed >= 3} />
+          </div>
+        </>
+      )}
     </section>
   );
 }
