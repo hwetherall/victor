@@ -142,6 +142,17 @@ export async function handleUploadArtifact(
     return errorResult(`upload_artifact: unknown type "${args.type}"`);
   }
 
+  // STORY-001 truncation diagnostic: log the b64 length at handler entry to
+  // compare against the stream-side log in managed-agents-client.ts. If both
+  // match the bash tool_result size, the truncation is downstream (InsForge
+  // storage upload). If the handler sees a smaller value than the stream
+  // event, the truncation is in our orchestrator input plumbing.
+  console.log(
+    `[v2-diag] upload_artifact HANDLER entry: filename=${args.filename} ` +
+      `type=${args.type} content_b64.length=${args.content_b64.length} ` +
+      `head40="${args.content_b64.slice(0, 40)}" tail40="${args.content_b64.slice(-40)}"`,
+  );
+
   // Decode + sanitize filename.
   let buf: Buffer;
   try {
@@ -155,6 +166,10 @@ export async function handleUploadArtifact(
   if (buf.length > 25 * 1024 * 1024) {
     return errorResult(`upload_artifact: file too large (${buf.length} bytes; cap 25 MB)`);
   }
+  console.log(
+    `[v2-diag] upload_artifact decoded buf.length=${buf.length} bytes ` +
+      `(from content_b64.length=${args.content_b64.length}; ratio=${(buf.length / args.content_b64.length).toFixed(3)})`,
+  );
 
   const baseFilename = sanitizeFilename(path.basename(args.filename));
   const { caseId } = input.caseContext;

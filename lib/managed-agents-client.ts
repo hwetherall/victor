@@ -211,9 +211,19 @@ interface ConsumeResult {
   lastAgentText: string;
   stopReason: StopReason | null;
   /** True if the stream threw `TypeError: terminated` (or similar undici
-   *  "fetch failed" / "aborted") — meaning the session ended out from under
-   *  us. Caller should break the cycle loop, not continue. */
+   *  "fetch failed" / "aborted"). Historically misnamed — see `disconnected`
+   *  for the recovery semantics. Kept for backward compat with grep paths
+   *  that look for "stream terminated mid-cycle" log lines. */
   terminated: boolean;
+  /** True ONLY when the SDK stream threw a transport-level error (network
+   *  drop, undici timeout) but the session itself may still be alive. The
+   *  caller should verify via `sessions.retrieve` and re-attach the stream
+   *  rather than breaking the cycle loop. Diagnosed in session
+   *  sesn_01Sna7gwVGfsYuWGtYuF6eqF: a 10-minute model response (13K tokens,
+   *  re-emitting a 15K-char b64 blob) outlasted the SDK's transport, the
+   *  stream dropped, and the orchestrator abandoned a perfectly healthy
+   *  session in `requires_action` for upload_artifact. */
+  disconnected: boolean;
 }
 
 /** Drain a single SSE stream until `session.status_idle` (or it terminates).
@@ -312,6 +322,21 @@ async function consumeStreamEvents(
         }
         case "agent.custom_tool_use": {
           console.log(`[v2-debug] agent.custom_tool_use FULL=${JSON.stringify(ev).slice(0, 800)}`);
+          // STORY-001 truncation diagnostic: when the agent uploads an
+          // artifact, log the b64 string length as it arrives off the SDK
+          // stream so we can compare against the bash tool_result b64 size
+          // (which we already capture in sandboxFileRescues) AND against
+          // the handler-side length. Three sites give us triangulation.
+          if (ev.name === "upload_artifact") {
+            const inp = ev.input as { content_b64?: unknown; filename?: unknown } | null;
+            const b64 = typeof inp?.content_b64 === "string" ? inp.content_b64 : "";
+            console.log(
+              `[v2-diag] upload_artifact INCOMING from stream: ` +
+                `filename=${String(inp?.filename ?? "?")} ` +
+                `content_b64.length=${b64.length} ` +
+                `head40="${b64.slice(0, 40)}" tail40="${b64.slice(-40)}"`,
+            );
+          }
           collectors.pendingToolUses.push({
             eventId: ev.id as string,
             name: ev.name as string,
@@ -504,12 +529,12 @@ async function consumeStreamEvents(
   } catch (streamErr) {
     const msg = streamErr instanceof Error ? streamErr.message : String(streamErr);
     if (/terminated|aborted|fetch failed/i.test(msg)) {
-      console.warn(`[v2] stream terminated mid-cycle (treating as session end): ${msg}`);
-      return { lastAgentText, stopReason, terminated: true };
+      console.warn(`[v2] stream disconnected mid-cycle (transport-level): ${msg}`);
+      return { lastAgentText, stopReason, terminated: true, disconnected: true };
     }
     throw streamErr;
   }
-  return { lastAgentText, stopReason, terminated: false };
+  return { lastAgentText, stopReason, terminated: false, disconnected: false };
 }
 
 interface DispatchSideEffects {
@@ -697,11 +722,55 @@ export async function createInvestigatorSession(
   };
   let cycles = 0;
   const MAX_CYCLES = 12; // generous; outcomes max_iterations is the real cap
+  // STORY-001 follow-up: SDK transport drops on long-running responses (e.g.
+  // ~13K-token model output after a bash b64 result) used to kill the cycle
+  // loop. We now distinguish transport disconnect from real session end —
+  // retry the stream up to MAX_STREAM_RETRIES times when the session is
+  // still alive on Anthropic's side, with a short backoff between attempts.
+  let streamRetries = 0;
+  const MAX_STREAM_RETRIES = 5;
+  const STREAM_RETRY_DELAY_MS = 1000;
 
   while (cycles < MAX_CYCLES) {
     cycles++;
     const consume = await consumeStreamEvents(stream, collectors, lastAgentText);
     lastAgentText = consume.lastAgentText;
+    if (consume.disconnected) {
+      if (streamRetries >= MAX_STREAM_RETRIES) {
+        console.warn(
+          `[v2] stream re-attach cap reached (${MAX_STREAM_RETRIES}); ending cycle loop`,
+        );
+        break;
+      }
+      streamRetries++;
+      let sessionAlive = false;
+      try {
+        const status = await client.beta.sessions.retrieve(session.id);
+        sessionAlive = !(status as { archived_at?: string | null }).archived_at;
+      } catch (e) {
+        console.warn(
+          `[v2] session status check failed after disconnect: ${e instanceof Error ? e.message : String(e)}`,
+        );
+      }
+      if (!sessionAlive) {
+        console.warn(`[v2] session archived after disconnect; ending cycle loop`);
+        break;
+      }
+      console.log(
+        `[v2] re-attaching stream after transport drop (retry ${streamRetries}/${MAX_STREAM_RETRIES})`,
+      );
+      await new Promise((r) => setTimeout(r, STREAM_RETRY_DELAY_MS));
+      try {
+        stream = await client.beta.sessions.events.stream(session.id);
+        cycles--; // disconnect-retry is not a real cycle
+        continue;
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.warn(`[v2] re-stream after disconnect failed: ${msg}`);
+        break;
+      }
+    }
+    streamRetries = 0; // reset on successful consume
     if (consume.terminated) break;
     if (!consume.stopReason || consume.stopReason.type !== "requires_action") break;
 
@@ -1163,11 +1232,51 @@ export async function createResearcherSession(
   // Researcher should not spin — its loop count is bounded by the agent's
   // own stopping rubric. 8 cycles is a generous safety net.
   const MAX_CYCLES = 8;
+  // Mirror of the Investigator loop's transport-disconnect recovery.
+  let streamRetries = 0;
+  const MAX_STREAM_RETRIES = 5;
+  const STREAM_RETRY_DELAY_MS = 1000;
 
   while (cycles < MAX_CYCLES) {
     cycles++;
     const consume = await consumeStreamEvents(stream, collectors, lastAgentText);
     lastAgentText = consume.lastAgentText;
+    if (consume.disconnected) {
+      if (streamRetries >= MAX_STREAM_RETRIES) {
+        console.warn(
+          `[v2] researcher stream re-attach cap reached (${MAX_STREAM_RETRIES}); ending cycle loop`,
+        );
+        break;
+      }
+      streamRetries++;
+      let sessionAlive = false;
+      try {
+        const status = await client.beta.sessions.retrieve(session.id);
+        sessionAlive = !(status as { archived_at?: string | null }).archived_at;
+      } catch (e) {
+        console.warn(
+          `[v2] researcher session status check failed: ${e instanceof Error ? e.message : String(e)}`,
+        );
+      }
+      if (!sessionAlive) {
+        console.warn(`[v2] researcher session archived after disconnect; ending cycle loop`);
+        break;
+      }
+      console.log(
+        `[v2] researcher re-attaching stream (retry ${streamRetries}/${MAX_STREAM_RETRIES})`,
+      );
+      await new Promise((r) => setTimeout(r, STREAM_RETRY_DELAY_MS));
+      try {
+        stream = await client.beta.sessions.events.stream(session.id);
+        cycles--;
+        continue;
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        console.warn(`[v2] researcher re-stream after disconnect failed: ${msg}`);
+        break;
+      }
+    }
+    streamRetries = 0;
     if (consume.terminated) break;
     if (!consume.stopReason || consume.stopReason.type !== "requires_action") break;
 

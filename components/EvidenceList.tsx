@@ -116,7 +116,7 @@ export function EvidenceList({
 
       <TestDefinition content={parentContent} />
 
-      {isIrrDrilldown && <FinancialModelPanel />}
+      {isIrrDrilldown && <FinancialModelPanel defaultCollapsed />}
 
       {v2.data && v2.data.artifacts.length > 0 && (
         <section>
