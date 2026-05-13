@@ -232,7 +232,7 @@ export async function handleUploadArtifact(
     // Best-effort cleanup of the orphaned storage blob. If this fails too,
     // the original error is more useful than a chained one.
     try {
-      await insforge.storage.from(ARTIFACT_BUCKET).remove(storagePath);
+      await insforge.storage.from(ARTIFACT_BUCKET).remove([storagePath]);
     } catch (cleanupErr) {
       console.warn(
         `[v2] upload_artifact orphaned blob cleanup failed for ${storagePath}: ` +

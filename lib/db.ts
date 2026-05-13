@@ -1,28 +1,25 @@
-import { createClient } from "@insforge/sdk";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { config } from "./config";
 
-type InsforgeClient = ReturnType<typeof createClient>;
+// Shim: callers use insforge.database.from() and insforge.storage.from()
+// The Supabase client exposes .from() directly, so database = the client itself.
+type InsforgeShim = {
+  database: SupabaseClient;
+  storage: SupabaseClient["storage"];
+};
 
-let cached: InsforgeClient | undefined;
+let cached: InsforgeShim | undefined;
 
-function getInsforge(): InsforgeClient {
+function getClient(): InsforgeShim {
   if (!cached) {
-    cached = createClient({
-      baseUrl: config.insforgeUrl,
-      anonKey: config.insforgeAnonKey,
-    });
+    const client = createClient(config.insforgeUrl, config.insforgeAnonKey);
+    cached = { database: client, storage: client.storage };
   }
   return cached;
 }
 
-/** Lazy client so `next build` does not require InsForge env at module load (e.g. Vercel). */
-export const insforge: InsforgeClient = new Proxy({} as InsforgeClient, {
+export const insforge: InsforgeShim = new Proxy({} as InsforgeShim, {
   get(_target, prop) {
-    const client = getInsforge();
-    const value = Reflect.get(client, prop, client);
-    if (typeof value === "function") {
-      return value.bind(client);
-    }
-    return value;
+    return Reflect.get(getClient(), prop);
   },
 });

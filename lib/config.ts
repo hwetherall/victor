@@ -3,8 +3,7 @@ function readRequired(name: string): string {
   if (!value) {
     throw new Error(
       `Missing required environment variable: ${name}. ` +
-        `Copy .env.example to .env.local and fill in values, ` +
-        `or run \`npx @insforge/cli secrets get ANON_KEY\` for the InsForge anon key.`,
+        `Copy .env.example to .env.local and fill in values.`,
     );
   }
   return value;
@@ -17,13 +16,13 @@ function readOptional(name: string): string | undefined {
 
 export const config = {
   get insforgeUrl() {
-    return readRequired("NEXT_PUBLIC_INSFORGE_URL");
+    return readRequired("NEXT_PUBLIC_SUPABASE_URL");
   },
   get insforgeAnonKey() {
-    return readRequired("NEXT_PUBLIC_INSFORGE_ANON_KEY");
+    return readRequired("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
   },
   get insforgeApiKey() {
-    return readOptional("INSFORGE_API_KEY");
+    return readOptional("SUPABASE_SERVICE_ROLE_KEY");
   },
   get openRouterKey() {
     return readRequired("OPENROUTER_API_KEY");
